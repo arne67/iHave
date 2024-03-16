@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="..\:/Users/Arne/AndroidStudioProjects/iHave/app/src/main/res/drawable/border.xml" value="0.1485" />
+        <entry key="..\:/Users/Arne/AndroidStudioProjects/iHave/app/src/main/res/drawable/ic_baseline_camera_alt_24.xml" value="0.1485" />
+        <entry key="..\:/Users/Arne/AndroidStudioProjects/iHave/app/src/main/res/drawable/ic_baseline_gallery.xml" value="0.154" />
+        <entry key="..\:/Users/Arne/AndroidStudioProjects/iHave/app/src/main/res/drawable/ic_baseline_image_24.xml" value="0.154" />
+        <entry key="..\:/Users/Arne/AndroidStudioProjects/iHave/app/src/main/res/layout/activity_main.xml" value="0.19375" />
+        <entry key="..\:/Users/Arne/AndroidStudioProjects/iHave/app/src/main/res/layout/activity_note_edit.xml" value="0.19375" />
+        <entry key="..\:/Users/Arne/AndroidStudioProjects/iHave/app/src/main/res/layout/activity_photo_list.xml" value="0.19375" />
+        <entry key="..\:/Users/Arne/AndroidStudioProjects/iHave/app/src/main/res/layout/activity_plant.xml" value="0.19375" />
+        <entry key="..\:/Users/Arne/AndroidStudioProjects/iHave/app/src/main/res/layout/activity_plant_edit.xml" value="0.2" />
+        <entry key="..\:/Users/Arne/AndroidStudioProjects/iHave/app/src/main/res/layout/border.xml" value="0.19375" />
+        <entry key="..\:/Users/Arne/AndroidStudioProjects/iHave/app/src/main/res/layout/layout_plant_list_item.xml" value="0.536" />
+        <entry key="..\:/Users/Arne/AndroidStudioProjects/iHave/app/src/main/res/layout/layout_plant_toolbar.xml" value="0.19375" />
+      </map>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_17_PREVIEW" project-jdk-name="11" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/build/classes" />
+  </component>
+  <component name="ProjectType">
+    <option name="id" value="Android" />
+  </component>
+</project>

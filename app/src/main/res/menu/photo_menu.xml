@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/foto_info"
+        android:icon="@drawable/ic_baseline_camera"
+        android:title="Info om billede" />
+
+    <item
+        android:id="@+id/select_main_photo"
+        android:icon="@drawable/ic_baseline_gallery"
+        android:title="Vælg som primært billede" />
+    <item
+        android:id="@+id/delete_photo"
+        android:icon="@drawable/ic_baseline_gallery"
+        android:title="Slet billede" />
+
+
+</menu>

@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Dette xml kan bruges direkte i activity_plant - ved at ændre følgende når det er kopieret
+.............................
+android:visibility="visible"
+rettes til
+android:visibility="gone"
+.............................
+android:enabled="true"
+rettes til
+android:enabled="false"
+
+bør dog erstattes af javakode i PlantActivity så xml kan kopieres uden at skulle rettes
+
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".PlantEditActivity">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/plants_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:contentInsetEnd="0dp"
+            app:contentInsetStart="0dp">
+
+            <include layout="@layout/layout_plant_toolbar" />
+
+        </androidx.appcompat.widget.Toolbar>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- oversigtsbillede total -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:weightSum="100">
+
+
+                <!-- billede placeholder + ikoner  -->
+
+                <ImageView
+                    android:id="@+id/main_photo"
+                    android:layout_width="300dp"
+                    android:layout_height="300dp"
+                    android:layout_gravity="center_horizontal"
+                    android:src="@drawable/ic_baseline_no_photography_24" />
+
+
+                <TextView
+                    android:id="@+id/main_photo_button"
+                    android:visibility="visible"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="Tilføj billede"
+                    android:textAllCaps="false"
+                    android:textColor="@color/black"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
+
+
+            </LinearLayout>
+            <!--
+                        <Space
+                            android:layout_width="10dp"
+                            android:layout_height="10dp"
+                            android:layout_weight="66" />
+
+                        <TextView
+                            android:id="@+id/plant_id"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="casual"
+                            android:lines="3"
+                            android:padding="10dp"
+                            android:text="id"
+                            android:textColor="@color/black"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+            -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/plant_title"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="11dp"
+                android:layout_marginRight="11dp"
+                android:hint="Navn">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:layout_width="match_parent"
+                    android:enabled="true"
+                    android:textColor="@color/colorViewText"
+                    android:layout_height="wrap_content" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/plant_text"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="11dp"
+                android:layout_marginRight="11dp"
+                android:hint="Beskrivelse"
+                android:saveEnabled="true">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:layout_width="match_parent"
+                    android:enabled="true"
+                    android:textColor="@color/colorViewText"
+                    android:layout_height="wrap_content"
+                    android:saveEnabled="true" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/menu"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="11dp"
+                android:layout_marginRight="11dp"
+                android:hint="Kategori">
+
+                <AutoCompleteTextView
+                    android:id="@+id/autoCompleteCategory"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:enabled="true"
+                    android:textColor="@color/colorViewText"
+                    android:inputType="none" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="10dp">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/border"
+                    android:orientation="vertical"
+                    android:padding="10dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Blomstring"
+                        android:textStyle="bold" />
+
+                    <GridLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:columnCount="1"
+                        android:orientation="vertical"
+                        android:padding="1dp"
+                        android:rowCount="12">
+
+
+                        <CheckBox
+                            android:id="@+id/checkbox_flower_01"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:minWidth="0dp"
+                            android:minHeight="0dp"
+                            android:enabled="true"
+                            android:textColor="@color/colorViewText"
+                            android:text="Januar" />
+
+
+                        <CheckBox
+                            android:id="@+id/checkbox_flower_02"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:minWidth="0dp"
+                            android:minHeight="0dp"
+                            android:enabled="true"
+                            android:textColor="@color/colorViewText"
+                            android:text="Februar" />
+
+                        <CheckBox
+                            android:id="@+id/checkbox_flower_03"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:minWidth="0dp"
+                            android:minHeight="0dp"
+                            android:enabled="true"
+                            android:textColor="@color/colorViewText"
+                            android:text="Marts" />
+
+                        <CheckBox
+                            android:id="@+id/checkbox_flower_04"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:minWidth="0dp"
+                            android:minHeight="0dp"
+                            android:enabled="true"
+                            android:textColor="@color/colorViewText"
+                            android:text="April" />
+
+                        <CheckBox
+                            android:id="@+id/checkbox_flower_05"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:minWidth="0dp"
+                            android:minHeight="0dp"
+                            android:enabled="true"
+                            android:textColor="@color/colorViewText"
+                            android:text="Maj" />
+
+                        <CheckBox
+                            android:id="@+id/checkbox_flower_06"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:minWidth="0dp"
+                            android:minHeight="0dp"
+                            android:enabled="true"
+                            android:textColor="@color/colorViewText"
+                            android:text="Juni" />
+
+                        <CheckBox
+                            android:id="@+id/checkbox_flower_07"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:minWidth="0dp"
+                            android:minHeight="0dp"
+                            android:enabled="true"
+                            android:textColor="@color/colorViewText"
+                            android:text="Juli" />
+
+                        <CheckBox
+                            android:id="@+id/checkbox_flower_08"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:minWidth="0dp"
+                            android:minHeight="0dp"
+                            android:enabled="true"
+                            android:textColor="@color/colorViewText"
+                            android:text="August" />
+
+                        <CheckBox
+                            android:id="@+id/checkbox_flower_09"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:minWidth="0dp"
+                            android:minHeight="0dp"
+                            android:enabled="true"
+                            android:textColor="@color/colorViewText"
+                            android:text="September" />
+
+                        <CheckBox
+                            android:id="@+id/checkbox_flower_10"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:minWidth="0dp"
+                            android:minHeight="0dp"
+                            android:enabled="true"
+                            android:textColor="@color/colorViewText"
+                            android:text="Oktober" />
+
+                        <CheckBox
+                            android:id="@+id/checkbox_flower_11"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:minWidth="0dp"
+                            android:minHeight="0dp"
+                            android:enabled="true"
+                            android:textColor="@color/colorViewText"
+                            android:text="November" />
+
+                        <CheckBox
+                            android:id="@+id/checkbox_flower_12"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:minWidth="0dp"
+                            android:minHeight="0dp"
+                            android:enabled="true"
+                            android:textColor="@color/colorViewText"
+                            android:text="December" />
+                    </GridLayout>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+
+                    android:orientation="vertical"
+                    android:padding="10dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:text="Flere billeder"
+                        android:textStyle="bold" />
+
+                    <GridLayout
+                        android:id="@+id/collage"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_gravity="center_horizontal"
+                        android:background="@drawable/border_photos"
+                        android:columnCount="2"
+                        android:rowCount="2">
+
+                        <ImageView
+                            android:id="@+id/multi_photo1"
+                            android:scaleType="centerCrop"
+                            android:layout_width="90dp"
+                            android:layout_height="90dp"/>
+                        <ImageView
+                            android:id="@+id/multi_photo2"
+                            android:scaleType="centerCrop"
+                            android:layout_width="90dp"
+                            android:layout_height="90dp"/>
+                        <ImageView
+                            android:id="@+id/multi_photo3"
+                            android:scaleType="centerCrop"
+                            android:layout_width="90dp"
+                            android:layout_height="90dp"/>
+                        <RelativeLayout>
+
+                        <ImageView
+                            android:id="@+id/multi_photo4"
+                            android:scaleType="centerCrop"
+                            android:layout_width="90dp"
+                            android:layout_height="90dp"/>
+                            <TextView
+                                android:id="@+id/photo_count"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:gravity="center_vertical|center_horizontal"
+                                android:textColor="@color/black"
+                                android:textSize="22sp"
+                                android:textStyle="bold"
+                                android:text=""
+                                android:layout_alignTop="@id/multi_photo4"
+                                android:layout_alignBottom="@id/multi_photo4"
+                                android:layout_alignLeft="@id/multi_photo4"
+                                android:layout_alignRight="@id/multi_photo4"
+                                />
+                            
+                        </RelativeLayout>
+
+                    </GridLayout>
+
+                    <TextView
+                        android:id="@+id/multi_photo_button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:text="Tilføj billede"
+                        android:textAllCaps="false"
+                        android:textColor="@color/black"
+                        android:textSize="22sp"
+                        android:visibility="visible"
+                        android:textStyle="bold" />
+
+                    <Space
+                        android:layout_width="10dp"
+                        android:layout_height="10dp"
+                        android:layout_weight="66" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <ImageButton
+                android:id="@+id/test_button"
+                android:layout_width="140dp"
+                android:layout_height="140dp"
+                android:visibility="invisible"
+                android:src="@drawable/ic_baseline_no_photography_24" />
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>
