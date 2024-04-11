@@ -35,7 +35,20 @@
         app:layout_constraintTop_toBottomOf="@+id/ihave_icon"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/confirm"
+        app:layout_constraintVertical_bias="0.2" />
+
+    <Button
+        android:id="@+id/confirm"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start"
+        android:enabled="false"
+        android:text="@string/action_confirm"
         app:layout_constraintBottom_toTopOf="@id/username"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/unconfirmed_text"
         app:layout_constraintVertical_bias="0.2" />
 
     <EditText
@@ -47,7 +60,7 @@
         android:hint="@string/prompt_username"
         android:inputType="textEmailAddress"
         android:selectAllOnFocus="true"
-        app:layout_constraintTop_toBottomOf="@+id/unconfirmed_text"
+        app:layout_constraintTop_toBottomOf="@+id/confirm"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toTopOf="@id/password"
@@ -68,9 +81,27 @@
         app:layout_constraintTop_toBottomOf="@+id/username"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/full_name"
+        app:layout_constraintBottom_toTopOf="@id/password_repeated"
         app:layout_constraintVertical_bias="0.2"
     />
+
+    <EditText
+        android:id="@+id/password_repeated"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="0dp"
+        android:autofillHints="@string/prompt_password"
+        android:hint="@string/prompt_password"
+        android:imeActionLabel="@string/action_sign_in_short"
+        android:imeOptions="actionDone"
+        android:inputType="textPassword"
+        android:selectAllOnFocus="true"
+        app:layout_constraintTop_toBottomOf="@+id/password"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/full_name"
+        app:layout_constraintVertical_bias="0.2"
+        />
 
     <EditText
         android:id="@+id/full_name"
@@ -83,7 +114,7 @@
         android:imeOptions="actionDone"
         android:inputType="text"
         android:selectAllOnFocus="true"
-        app:layout_constraintTop_toBottomOf="@+id/password"
+        app:layout_constraintTop_toBottomOf="@+id/password_repeated"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toTopOf="@id/email"
@@ -104,23 +135,9 @@
         app:layout_constraintTop_toBottomOf="@+id/full_name"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/login"
-        app:layout_constraintVertical_bias="0.2" />
-
-
-    <Button
-        android:id="@+id/login"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="start"
-        android:layout_marginBottom="0dp"
-        android:enabled="false"
-        android:text="@string/action_login"
-        app:layout_constraintTop_toBottomOf="@+id/email"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toTopOf="@id/register"
         app:layout_constraintVertical_bias="0.2" />
+
 
     <Button
         android:id="@+id/register"
@@ -130,40 +147,11 @@
         android:layout_marginBottom="0dp"
         android:enabled="false"
         android:text="@string/action_register"
-        app:layout_constraintTop_toBottomOf="@+id/login"
+        app:layout_constraintTop_toBottomOf="@+id/email"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/select_login"
+        app:layout_constraintBottom_toTopOf="@id/loading"
         app:layout_constraintVertical_bias="0.2" />
-
-    <Button
-        android:id="@+id/select_login"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="start"
-        android:layout_marginBottom="0dp"
-        android:enabled="false"
-        android:text="@string/action_select_login"
-        app:layout_constraintTop_toBottomOf="@+id/register"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/select_register"
-        app:layout_constraintVertical_bias="0.2"
-        />
-    <Button
-        android:id="@+id/select_register"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="start"
-        android:layout_marginBottom="0dp"
-        android:enabled="false"
-        android:text="@string/action_select_register"
-        app:layout_constraintTop_toBottomOf="@+id/select_login"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintVertical_bias="0.2"
-        />
 
 
     <ProgressBar
@@ -172,7 +160,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="start"
         android:visibility="invisible"
-        app:layout_constraintTop_toBottomOf="@id/select_register"
+        app:layout_constraintTop_toBottomOf="@id/register"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"

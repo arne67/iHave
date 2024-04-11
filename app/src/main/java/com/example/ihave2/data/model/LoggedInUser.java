@@ -5,17 +5,17 @@ package com.example.ihave2.data.model;
  */
 public class LoggedInUser {
 
-    private Long userId;
+    private int userId;
     private String name;
     private String accessToken;
 
-    public LoggedInUser(Long userId, String name, String accessToken) {
+    public LoggedInUser(int userId, String name, String accessToken) {
         this.userId = userId;
         this.name = name;
         this.accessToken = accessToken;
     }
 
-    public Long getUserId() {
+    public int getUserId() {
         return userId;
     }
 

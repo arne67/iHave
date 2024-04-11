@@ -18,16 +18,18 @@ public class PlantWithListsDto implements Parcelable{
     private String mainPhotoName;
     private int category;
 
+    private boolean deleted;
+
     @Relation(
             parentColumn = "plantId",
             entityColumn = "userId"
     )
-    public List<PlantFlowerMonth> plantFlowerMonths;
+    private List<PlantFlowerMonth> plantFlowerMonths;
     @Relation(
             parentColumn = "plantId",
             entityColumn = "userId"
     )
-    public List<PlantPhoto> plantPhotos;
+    private List<PlantPhoto> plantPhotos;
 
     protected PlantWithListsDto(Parcel in) {
         plantId = in.readInt();
@@ -125,5 +127,29 @@ public class PlantWithListsDto implements Parcelable{
 
     public void setCategory(int category) {
         this.category = category;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
+
+    public List<PlantFlowerMonth> getPlantFlowerMonths() {
+        return plantFlowerMonths;
+    }
+
+    public void setPlantFlowerMonths(List<PlantFlowerMonth> plantFlowerMonths) {
+        this.plantFlowerMonths = plantFlowerMonths;
+    }
+
+    public List<PlantPhoto> getPlantPhotos() {
+        return plantPhotos;
+    }
+
+    public void setPlantPhotos(List<PlantPhoto> plantPhotos) {
+        this.plantPhotos = plantPhotos;
     }
 }

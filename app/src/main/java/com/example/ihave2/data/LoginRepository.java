@@ -1,5 +1,7 @@
 package com.example.ihave2.data;
 
+import android.util.Log;
+
 import com.example.ihave2.data.model.LoggedInUser;
 
 /**
@@ -46,6 +48,14 @@ public class LoginRepository {
     public Result<LoggedInUser> login(String userName, String password) {
         // handle login
         Result<LoggedInUser> result = dataSource.login(userName, password);
+        if (result instanceof Result.Success) {
+            setLoggedInUser(((Result.Success<LoggedInUser>) result).getData());
+        }
+        return result;
+    }
+    public Result<LoggedInUser> register(String userName, String password, String fullName, String email) {
+        // handle login
+        Result<LoggedInUser> result = dataSource.register(userName, password,fullName,email);
         if (result instanceof Result.Success) {
             setLoggedInUser(((Result.Success<LoggedInUser>) result).getData());
         }

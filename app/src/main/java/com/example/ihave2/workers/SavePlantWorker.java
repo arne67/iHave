@@ -13,12 +13,16 @@ import static com.example.ihave2.util.Constants.*;
 import com.example.ihave2.api.GooglePhotoApiClient;
 import com.example.ihave2.api.GooglePhotoApiScalarsClient;
 import com.example.ihave2.api.PlantApiClient;
+import com.example.ihave2.models.GetUserRespondDto;
+import com.example.ihave2.models.GooglePhotos.Album;
+import com.example.ihave2.models.GooglePhotos.AlbumsCreateRequestBody;
 import com.example.ihave2.models.GooglePhotos.BatchCreateRequestBody;
 import com.example.ihave2.models.GooglePhotos.BatchCreateRespondBody;
 import com.example.ihave2.models.GooglePhotos.MediaItem;
 import com.example.ihave2.models.GooglePhotos.NewMediaItem;
 import com.example.ihave2.models.GooglePhotos.NewMediaItemResult;
 import com.example.ihave2.models.GooglePhotos.SimpleMediaItem;
+import com.example.ihave2.models.PhotoAlbumIdDto;
 import com.example.ihave2.models.Plant;
 import com.example.ihave2.models.PlantDto;
 import com.example.ihave2.models.PlantFlowerMonth;
@@ -29,7 +33,9 @@ import com.example.ihave2.models.PlantWithLists;
 import com.example.ihave2.models.PlantWithListsDto;
 import com.example.ihave2.persistence.PlantRepository;
 import com.example.ihave2.util.ContextSingleton;
+import com.example.ihave2.util.GooglePhoto;
 import com.example.ihave2.util.Token;
+import com.example.ihave2.util.CurrentUser;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -41,7 +47,9 @@ import java.util.List;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import retrofit2.Call;
+import retrofit2.Callback;
 import retrofit2.Response;
+
 
 public class SavePlantWorker extends Worker {
     private static final String TAG = "SavePlantWorker";
@@ -118,8 +126,9 @@ public class SavePlantWorker extends Worker {
             plantWithLists = getNotUploadedPlant();
         }
 
-        //hvis det gik godt så opdaterer vi forekomsten i sqllite
-        Log.d(TAG, "1, 2 3.. dadaaaaa: " + workerPlantId);
+        if (CurrentUser.getPhotoAlbumId()==null && !CurrentUser.isPhotoAlbumIdUploaded()){
+            uploadAlbumId(CurrentUser.getPhotoAlbumId());
+        }
 
         return Result.success();
     }
@@ -149,7 +158,7 @@ public class SavePlantWorker extends Worker {
         mSucces = false;
         Log.d(TAG, "uploadNewPlant: #a" + plant.plant.getPlantId());
         PlantWithListsDto plantWithListsDto = getPlantWithlistsDto(plant);
-        String token = "";
+        String token = CurrentUser.getAccessToken();
         Log.d(TAG, "uploadNewPlant: a# plantwithlistsdto " + plantWithListsDto.toString());
         Call<PlantWithListsDto> call = PlantApiClient.getInstance().getMyApi().createPlant(token, plantWithListsDto);
         try {
@@ -178,9 +187,10 @@ public class SavePlantWorker extends Worker {
         plantWithListsDto.setCreatedTime(plant.plant.getCreatedTime());
         plantWithListsDto.setMainPhotoName(plant.plant.getMainPhotoName());
         plantWithListsDto.setCategory(plant.plant.getCategory());
+        plantWithListsDto.setDeleted(plant.plant.isDeleted());
 
-        plantWithListsDto.plantFlowerMonths = plant.plantFlowerMonths;
-        plantWithListsDto.plantPhotos = plant.plantPhotos;
+        plantWithListsDto.setPlantFlowerMonths(plant.plantFlowerMonths);
+        plantWithListsDto.setPlantPhotos(plant.plantPhotos);
         return plantWithListsDto;
     }
 
@@ -218,6 +228,7 @@ public class SavePlantWorker extends Worker {
         plantDto.setCreatedTime(plant.getCreatedTime());
         plantDto.setMainPhotoName(plant.getMainPhotoName());
         plantDto.setCategory(plant.getCategory());
+        plantDto.setDeleted(plant.isDeleted());
 
         return plantDto;
     }
@@ -478,6 +489,7 @@ public class SavePlantWorker extends Worker {
         batchCreateRequestBody.setNewMediaItems(newMediaItems);
         //mappe Ihave1
         batchCreateRequestBody.setAlbumId("APmtqhqTsIwY1-adjsTFnWFS1S9yQynVN8fHuEi4cwYa___VZ0aEPZQA8vgNs2kBx7JlJQ7j7mpK");
+        batchCreateRequestBody.setAlbumId(getAlbumId());
 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String jsonStr = gson.toJson(batchCreateRequestBody);
@@ -508,5 +520,112 @@ public class SavePlantWorker extends Worker {
 
     }
 
+    private String getAlbumId() {
+        String photoAlbumId = CurrentUser.getPhotoAlbumId();
+        Log.d(TAG, "getAlbumId: photoAlbumId 1: "+photoAlbumId);
+        if (photoAlbumId==null){
+            photoAlbumId=getPhotoAlbumIdFromCloud();
+            Log.d(TAG, "getAlbumId: photoAlbumId 2: "+photoAlbumId);
+            if (photoAlbumId==null){
+                return createPhotoAlbum();
+            } else {
+                CurrentUser.putPhotoAlbumId(photoAlbumId);
+                return photoAlbumId;
+            }
+        } else {
+            CurrentUser.putPhotoAlbumId(photoAlbumId);
+            return photoAlbumId;
+        }
+        
+    }
 
+    private String getPhotoAlbumIdFromCloud() {
+        //her skal vi kalde retrofit for at uploade synkront
+        Log.d(TAG, "uploadPlantPhoto: ");
+        mSucces = false;
+        String token = "";
+        Call<GetUserRespondDto> call = PlantApiClient.getInstance().getMyApi().getUser(CurrentUser.getUserId());
+        try {
+            Response<GetUserRespondDto> response = call.execute();
+            if (response.isSuccessful()) {
+                // handle successful response
+                Log.d(TAG, "uploadPlant: " + response.body());
+                mSucces = true;
+                return response.body().getPhotoAlbumId();
+            } else {
+                // handle unsuccessful response
+                Log.d(TAG, "uploadPlant: notfound" + response.errorBody().toString());
+                return null;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.d(TAG, "uploadPlant: io-fejl");
+            return null;
+        }
+
+
+    }
+
+    private String createPhotoAlbum() {
+        String albumId;
+        String bearerToken = "Bearer " + mAccessTokenString;
+        Log.d(TAG, "createAlbum 1 ");
+        Album album = new Album();
+        album.setTitle("iHave1");
+        AlbumsCreateRequestBody albumsCreateRequestBody = new AlbumsCreateRequestBody();
+        albumsCreateRequestBody.setAlbum(album);
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        String jsonStr = gson.toJson(albumsCreateRequestBody);
+        Log.d(TAG, "createAlbum: jsonstr" + jsonStr);
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json"), jsonStr);
+        Call<Album> call = GooglePhotoApiClient.getInstance().getMyApi().createAlbum(bearerToken, requestBody);
+        try {
+            Response<Album> response = call.execute();
+            if (response.isSuccessful()) {
+                // handle successful response
+                mSucces = true;
+                Log.d(TAG, "uploadPlant: " + response.body());
+                String photoAlbumId=response.body().getId();
+                CurrentUser.putPhotoAlbumId(photoAlbumId);
+                uploadAlbumId(photoAlbumId);
+                return photoAlbumId;
+            } else {
+                // handle unsuccessful response
+                Log.d(TAG, "uploadPlant: notfound" + response.errorBody().toString());
+                return null;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.d(TAG, "uploadPlant: io-fejl");
+            return null;
+        }
+    }
+
+    private void uploadAlbumId(String photoAlbumId) {
+        //her skal vi kalde retrofit for at uploade synkront
+        Log.d(TAG, "uploadAlbumId: ");
+        mSucces = false;
+        PhotoAlbumIdDto photoAlbumIdDto = new PhotoAlbumIdDto();
+        photoAlbumIdDto.setPhotoAlbumId(photoAlbumId);
+
+        String token = "";
+        Call<Void> call = PlantApiClient.getInstance().getMyApi().updatePhotoAlbumId(token, CurrentUser.getUserId(),photoAlbumIdDto);
+        try {
+            Response<Void> response = call.execute();
+            if (response.isSuccessful()) {
+                // handle successful response
+                Log.d(TAG, "uploadPlant: " + response.body());
+                mSucces = true;
+                CurrentUser.putPhotoAlbumIdUploaded(true);
+                //uploadPhotos(plant.plantPhotos);
+                //markPlantAsUploaded(response.body().getPlantId());
+            } else {
+                // handle unsuccessful response
+                Log.d(TAG, "uploadPlant: notfound" + response.errorBody().toString());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.d(TAG, "uploadPlant: io-fejl");
+        }
+    }
 }

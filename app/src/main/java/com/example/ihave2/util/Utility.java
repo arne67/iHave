@@ -1,6 +1,10 @@
 package com.example.ihave2.util;
 
 
+import android.content.Context;
+
+import com.example.ihave2.R;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -57,5 +61,9 @@ public class Utility {
             }
 
         }
+    }
+    public static String getIhaveCloudBaseUrl(){
+        Context context=ContextSingleton.getContekst();
+        return context.getResources().getString(R.string.ihaveCloudBaseUrl);
     }
 }

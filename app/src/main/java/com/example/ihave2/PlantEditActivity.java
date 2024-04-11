@@ -44,6 +44,7 @@ import com.example.ihave2.models.PlantFlowerMonth;
 import com.example.ihave2.models.PlantPhoto;
 import com.example.ihave2.models.PlantWithLists;
 import com.example.ihave2.persistence.PlantRepository;
+import com.example.ihave2.util.CurrentUser;
 import com.example.ihave2.util.Utility;
 import com.example.ihave2.viewmodels.PlantEditActivityViewModel;
 import com.google.android.material.textfield.TextInputLayout;
@@ -201,7 +202,7 @@ public class PlantEditActivity extends AppCompatActivity implements
     }
 
     private void setUserId() {
-        mEditedPlant.plant.setUserId(CURRENT_USER_ID);
+        mEditedPlant.plant.setUserId(CurrentUser.getUserId());
     }
 
 

@@ -1,7 +1,6 @@
 package com.example.ihave2;
 
 import static com.example.ihave2.util.Constants.*;
-import static com.example.ihave2.util.SharedPreferences.initiateSharedPreferences;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
@@ -43,17 +42,12 @@ import com.example.ihave2.models.TokenRefreshRequestDto;
 import com.example.ihave2.models.TokenStrings;
 import com.example.ihave2.models.test.PostItem;
 import com.example.ihave2.persistence.PlantRepository;
-import com.example.ihave2.util.Constants;
 import com.example.ihave2.util.Token;
+import com.example.ihave2.util.CurrentUser;
 import com.example.ihave2.workers.BackupWorker;
 import com.example.ihave2.workers.RecoverWorker;
 
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.common.api.Scope;
 import com.google.android.material.chip.Chip;
 
 import net.openid.appauth.AuthState;
@@ -608,9 +602,8 @@ public class MainActivity extends AppCompatActivity implements
     };
 
     private void reset_login() {
-        mSharedPreferences=initiateSharedPreferences();
-        mSharedPreferences.edit().remove(Constants.IHAVE_USER_NAME).apply();
-        mSharedPreferences.edit().remove(Constants.IHAVE_PASSWORD).apply();
+         //mSharedPreferences.edit().remove(Constants.IHAVE_USER_NAME).apply();
+        CurrentUser.deleteAccessToken();
     }
 
 

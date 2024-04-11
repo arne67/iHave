@@ -58,6 +58,10 @@ public abstract class PlantDao {
     //@Query("SELECT * FROM plants p where p.syncedWithCloud=0 limit 1")
     public abstract PlantWithLists getNotUploadedPlantSync();
 
+    @Query("SELECT * FROM plants p limit 1")
+    //@Query("SELECT * FROM plants p where p.syncedWithCloud=0 limit 1")
+    public abstract PlantWithLists getFirstPlant();
+
     @Query("update plants set syncedWithCloud=1, createdInCloud=1 where plantId=:plantId")
     public abstract int markPlantAsUploaded(int plantId);
     @Transaction
@@ -154,5 +158,6 @@ public abstract class PlantDao {
     public abstract int deleteAllPlantFlowerMonths();
     @Query("DELETE FROM plants")
     public abstract int deleteAllPlants();
+
 
 }

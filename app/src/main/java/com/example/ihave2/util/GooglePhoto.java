@@ -10,15 +10,6 @@ public class GooglePhoto {
     private static final String TAG = "GooglePhoto";
     private static SharedPreferences mSharedPreferences;
 
-     public static String getAlbumId(){
-        SharedPreferences sharedPreferences;
-        mSharedPreferences = initiateSharedPreferences();
-        return mSharedPreferences.getString(GOOGLE_PHOTO_ALBUMID, null);
-    }
 
-    public static void putAlbumId(String albumId){
-        mSharedPreferences=initiateSharedPreferences();
-        mSharedPreferences.edit().putString(GOOGLE_PHOTO_ALBUMID, albumId).apply();
-    }
 
 }

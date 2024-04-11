@@ -1,5 +1,6 @@
 package com.example.ihave2.ui.login;
 
+import static com.example.ihave2.util.Constants.WORKER_PLANT_ID;
 import static com.example.ihave2.util.SharedPreferences.initiateSharedPreferences;
 
 import android.app.Activity;
@@ -8,12 +9,14 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.work.Data;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
 
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -34,6 +37,10 @@ import com.example.ihave2.persistence.PlantRepository;
 import com.example.ihave2.databinding.ActivityLoginBinding;
 import com.example.ihave2.util.Constants;
 import com.example.ihave2.util.ContextSingleton;
+import com.example.ihave2.util.CurrentUser;
+import com.example.ihave2.workers.BackupWorker;
+import com.example.ihave2.workers.GetPlantWorker;
+import com.example.ihave2.workers.SavePlantWorker;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -41,8 +48,19 @@ public class LoginActivity extends AppCompatActivity {
     private ActivityLoginBinding binding;
     private String mUserName;
     private String mPassword;
-    private static SharedPreferences mSharedPreferences;
+    private String mAccessToken;
     private static String mMasterKeyAlias;
+
+    // UI - components
+    EditText mUsernameEditText;
+    EditText mPasswordEditText;
+    EditText mFullNameEditText;
+    EditText mEmailEditText;
+    Button mLoginButton;
+    Button mRegisterButton;
+    Button mSelectLoginButton;
+    Button mSelectRegisterButton;
+    ProgressBar mLoadingProgressBar;
 
 
     private static final String TAG = "LoginActivity";
@@ -56,56 +74,157 @@ public class LoginActivity extends AppCompatActivity {
 
         mPlantRepository = new PlantRepository(this);
 
-        Log.d(TAG, "onCreate: buildType: "+ BuildConfig.BUILD_TYPE.toString());
+        initiateUi();
+        setListeners();
+        startLoginObservers();
+
+
+
+        Log.d(TAG, "onCreate: buildType: " + BuildConfig.BUILD_TYPE.toString());
         //Log.d(TAG, "onCreate: apibase: "+getResources().getString(R.string.apibase));
 
-        if (!getSavedLogin()) {
+//        deleteLogin();
+//        CurrentUser.deletePhotoAlbumId();
+//        CurrentUser.deletePhotoAlbumIdUploaded();
+
+
+
+        if (getSavedLogin()) {
             startMainActivity();
             finish();
         } else {
-            if (unconfirmedAccountCreation()){
-                showUnconfirmed();
+            if (unconfirmedAccountCreation()) {
+                setStateUnconfirmed();
             } else {
-                startLoginProcedure();
+                setStateRegisterOrLogin();
             }
-            startLoginProcedure();
         }
 
+        //startLoginProcedure();
+    }
+
+    private void startGetPlantWorker() {
+        WorkManager mWorkManager;
+        mWorkManager = WorkManager.getInstance(getApplication());
+        OneTimeWorkRequest getPlantsRequest =
+                new OneTimeWorkRequest.Builder(GetPlantWorker.class)
+                        .build();
+        mWorkManager.enqueue(getPlantsRequest);
 
     }
 
-    private void showUnconfirmed() {
+    private void setListeners() {
+        mLoginButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "onClick: loginbutton");
+                mLoadingProgressBar.setVisibility(View.VISIBLE);
+                loginViewModel.login(mUsernameEditText.getText().toString(),
+                        mPasswordEditText.getText().toString());
+            }
+        });
+        mSelectLoginButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "onClick: selectloginbutton");
+                setStateLogin();
+            }
+        });
+        mSelectRegisterButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "onClick: selectregisterbutton");
+                startRegisterActivity();
+            }
+        });
+
     }
 
-    private boolean unconfirmedAccountCreation() {
-        return false;
+    private boolean isRegisterValid() {
+        return true;
     }
 
-    private void startLoginProcedure() {
+    private void register() {
+    }
+
+    private void initiateUi() {
         binding = ActivityLoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         loginViewModel = new ViewModelProvider(this, new LoginViewModelFactory())
                 .get(LoginViewModel.class);
 
-        final EditText usernameEditText = binding.username;
-        final EditText passwordEditText = binding.password;
-        final Button loginButton = binding.login;
-        final ProgressBar loadingProgressBar = binding.loading;
+        mUsernameEditText = binding.username;
+        mPasswordEditText = binding.password;
+        mFullNameEditText = binding.fullName;
+        mEmailEditText = binding.email;
+        mLoginButton = binding.login;
+        mRegisterButton = binding.register;
+        mSelectRegisterButton = binding.selectRegister;
+        mSelectLoginButton = binding.selectLogin;
+        mLoadingProgressBar = binding.loading;
+    }
 
+
+    private void setStateUnconfirmed() {
+        binding.unconfirmedText.setVisibility(View.VISIBLE);
+
+    }
+
+
+    private void setStateRegisterOrLogin() {
+        binding.username.setVisibility(View.GONE);
+        binding.password.setVisibility(View.GONE);
+        binding.fullName.setVisibility(View.GONE);
+        binding.email.setVisibility(View.GONE);
+        binding.login.setVisibility(View.GONE);
+        binding.register.setVisibility(View.GONE);
+        binding.selectLogin.setVisibility(View.VISIBLE);
+        binding.selectRegister.setVisibility(View.VISIBLE);
+        binding.unconfirmedText.setVisibility(View.GONE);
+
+        mSelectRegisterButton.setEnabled(true);
+        mSelectLoginButton.setEnabled(true);
+
+    }
+
+
+    private void setStateLogin() {
+        binding.username.setVisibility(View.VISIBLE);
+        binding.password.setVisibility(View.VISIBLE);
+        binding.fullName.setVisibility(View.INVISIBLE);
+        binding.email.setVisibility(View.INVISIBLE);
+        binding.login.setVisibility(View.VISIBLE);
+        binding.register.setVisibility(View.GONE);
+        binding.selectLogin.setVisibility(View.GONE);
+        binding.selectRegister.setVisibility(View.GONE);
+        binding.unconfirmedText.setVisibility(View.GONE);
+
+        mLoginButton.setEnabled(true);
+
+    }
+
+
+
+    private boolean unconfirmedAccountCreation() {
+        return false;
+    }
+
+    private void startLoginObservers() {
         loginViewModel.getLoginFormState().observe(this, new Observer<LoginFormState>() {
             @Override
             public void onChanged(@Nullable LoginFormState loginFormState) {
-                Log.d(TAG, "onChanged: ");
+                Log.d(TAG, "onChanged: getloginformstate ");
                 if (loginFormState == null) {
                     return;
                 }
-                loginButton.setEnabled(loginFormState.isDataValid());
+                mLoginButton.setEnabled(loginFormState.isDataValid());
                 if (loginFormState.getUsernameError() != null) {
-                    usernameEditText.setError(getString(loginFormState.getUsernameError()));
+                    Log.d(TAG, "onChanged: usernameerror");
+                    mUsernameEditText.setError(getString(loginFormState.getUsernameError()));
                 }
                 if (loginFormState.getPasswordError() != null) {
-                    passwordEditText.setError(getString(loginFormState.getPasswordError()));
+                    mPasswordEditText.setError(getString(loginFormState.getPasswordError()));
                 }
             }
         });
@@ -117,16 +236,21 @@ public class LoginActivity extends AppCompatActivity {
                 if (loginResult == null) {
                     return;
                 }
-                loadingProgressBar.setVisibility(View.GONE);
+                mLoadingProgressBar.setVisibility(View.GONE);
                 if (loginResult.getError() != null) {
-                    showLoginFailed(loginResult.getError());
+                    if (loginResult.isOnlyMissingConfirmation()){
+                        setStateUnconfirmed();
+                    } else {
+                        showLoginFailed(loginResult.getError());
+                    }
                 }
                 if (loginResult.getSuccess() != null) {
 
                     updateUiWithUser(loginResult.getSuccess());
                     setResult(Activity.RESULT_OK);
-                    saveLogin();
+                    saveLogin(loginResult.getSuccess());
                     startMainActivity();
+                    startGetPlantWorker();
                     finish();
                 }
 
@@ -148,16 +272,16 @@ public class LoginActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
-                mUserName = usernameEditText.getText().toString();
-                mPassword = passwordEditText.getText().toString();
-                loginViewModel.loginDataChanged(usernameEditText.getText().toString(),
-                        passwordEditText.getText().toString());
-                if (usernameEditText.getText().toString().equals("d")) {
+                mUserName = mUsernameEditText.getText().toString();
+                mPassword = mPasswordEditText.getText().toString();
+                loginViewModel.loginDataChanged(mUsernameEditText.getText().toString(),
+                        mPasswordEditText.getText().toString());
+                if (mUsernameEditText.getText().toString().equals("d")) {
                     Runnable runnable = new Runnable() {
                         public void run() {
                             //some code here
                             Log.d(TAG, "run: visletter");
-                            mPlantRepository.deleteAllPlants();
+                            //mPlantRepository.deleteAllPlants();
                         }
                     };
                     Thread thread = new Thread(runnable);
@@ -165,46 +289,48 @@ public class LoginActivity extends AppCompatActivity {
                 }
             }
         };
-        usernameEditText.addTextChangedListener(afterTextChangedListener);
-        passwordEditText.addTextChangedListener(afterTextChangedListener);
-        passwordEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        mUsernameEditText.addTextChangedListener(afterTextChangedListener);
+        mPasswordEditText.addTextChangedListener(afterTextChangedListener);
+        mPasswordEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
 
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    loginViewModel.login(usernameEditText.getText().toString(),
-                            passwordEditText.getText().toString());
+                    loginViewModel.login(mUsernameEditText.getText().toString(),
+                            mPasswordEditText.getText().toString());
                 }
                 return false;
             }
         });
 
-        loginButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                loadingProgressBar.setVisibility(View.VISIBLE);
-                loginViewModel.login(usernameEditText.getText().toString(),
-                        passwordEditText.getText().toString());
-            }
-        });
     }
 
     private void startMainActivity() {
         startActivity(new Intent(LoginActivity.this, MainActivity.class));
     }
 
-    private boolean getSavedLogin() {
-        mSharedPreferences = initiateSharedPreferences();
-        mUserName = mSharedPreferences.getString(Constants.IHAVE_USER_NAME, null);
-        mPassword = mSharedPreferences.getString(Constants.IHAVE_PASSWORD, null);
-        return !(mUserName == null);
+    private void startRegisterActivity() {
+        startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
     }
 
-    private void saveLogin() {
-        mSharedPreferences = initiateSharedPreferences();
-        mSharedPreferences.edit().putString(Constants.IHAVE_USER_NAME, mUserName).apply();
-        mSharedPreferences.edit().putString(Constants.IHAVE_PASSWORD, mPassword).apply();
+
+    private boolean getSavedLogin() {
+        mAccessToken= CurrentUser.getAccessToken();
+        if (mAccessToken==null) return false;
+        else return true;
+
     }
+
+    private void saveLogin(LoggedInUserView loggedInUserView) {
+        CurrentUser.putUserId(loggedInUserView.getUserId());
+        CurrentUser.putAccessToken(loggedInUserView.getAccessToken());
+    }
+
+    private void deleteLogin() {
+        CurrentUser.deleteUserId();
+        CurrentUser.deleteAccessToken();
+    }
+
 
     private void updateUiWithUser(LoggedInUserView model) {
         String welcome = getString(R.string.welcome) + model.getDisplayName();

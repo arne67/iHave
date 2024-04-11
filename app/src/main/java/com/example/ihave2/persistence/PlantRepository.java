@@ -57,6 +57,10 @@ public class PlantRepository {
     public PlantWithLists getNotUploadedPlant() {
         return mPlantDatabase.getPlantDao().getNotUploadedPlantSync();
     }
+
+    public PlantWithLists getFirstPlant() {
+        return mPlantDatabase.getPlantDao().getFirstPlant();
+    }
     public int markPlantAsUploaded(int plantId) {
         Log.d(TAG, "markPlantAsUploaded: "+plantId);
         return mPlantDatabase.getPlantDao().markPlantAsUploaded(plantId);
@@ -257,5 +261,6 @@ public class PlantRepository {
         mPlantDatabase.getPlantDao().deleteAllPlantFlowerMonths();
         mPlantDatabase.getPlantDao().deleteAllPlants();
     }
+
 
 }

@@ -7,12 +7,31 @@
         <item>Buske</item>
     </string-array>
     <string name="title_activity_login">LoginActivity</string>
-    <string name="prompt_email">Email</string>
+    <string name="prompt_username">Brugerid</string>
     <string name="prompt_password">Password</string>
-    <string name="action_sign_in">Sign in or register</string>
+    <string name="prompt_password_repeated">Gentag password</string>
+
+    <string name="prompt_full_name">Fuldt navn</string>
+    <string name="prompt_email">e-mailadresse</string>
+    <string name="action_login">Login</string>
+    <string name="action_sign_in">Sign in</string>
+    <string name="action_register">Opret bruger</string>
+    <string name="action_select_login">Login med eksisterende bruger</string>
+    <string name="action_select_register">Opret ny bruger</string>
+    <string name="action_confirm">Det er forstået</string>
+
     <string name="action_sign_in_short">Sign in</string>
-    <string name="welcome">"Welcome !"</string>
+
+    <string name="welcome">"Velkommen "</string>
+    <string name="registered">"Bruger er nu oprettet"</string>
+
+    <string name="unconfirmed_notification">Bekræft venligst oprettelsen i den mail du har modtaget</string>
     <string name="invalid_username">Not a valid username</string>
     <string name="invalid_password">Password must be >5 characters</string>
-    <string name="login_failed">"Login failed"</string>
+    <string name="invalid_password_repeated">Passwords er ikke ens</string>
+    <string name="invalid_fullname">Ikke gyldigt navn</string>
+    <string name="invalid_email">Ikke gyldig email</string>
+    <string name="login_failed">"Ugyldigt brugerid eller password"</string>
+    <string name="register_failed">"Bruger kunne ikke oprettes"</string>
+    <string name="register_duplicate">"Bruger findes allerede"</string>
 </resources>

@@ -1,6 +1,7 @@
 package com.example.ihave2.api;
 
 
+import com.example.ihave2.models.GooglePhotos.Album;
 import com.example.ihave2.models.GooglePhotos.AlbumsGetRespondBody;
 import com.example.ihave2.models.GooglePhotos.BatchCreateRequestBody;
 import com.example.ihave2.models.GooglePhotos.BatchCreateRespondBody;
@@ -28,8 +29,8 @@ public interface GooglePhotoApi {
     Call<MediaItem> getMediaItem(@Header("Authorization") String token, @Path("mediaitemid") String mediaItemId);
 
     @POST("albums")
-    Call<String> createAlbum(@Header("Authorization") String token,
-                                @Body RequestBody requestBody);
+    Call<Album> createAlbum(@Header("Authorization") String token,
+                            @Body RequestBody requestBody);
 
     @Headers({
 //            "Content-type: application/octet-stream",

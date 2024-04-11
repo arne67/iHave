@@ -7,9 +7,10 @@ public class Constants {
     public static final String REFRESH_TOKEN_PHOTO = "REFRESH_TOKEN_PHOTO";
     public static final String ACCESS_TOKEN_DRIVE = "ACCESS_TOKEN_DRIVE";
     public static final String REFRESH_TOKEN_DRIVE = "REFRESH_TOKEN_DRIVE";
-    public static final String IHAVE_USER_NAME = "IHAVE_USER_NAME";
-    public static final String IHAVE_PASSWORD = "IHAVE_PASSWORD";
+    public static final String IHAVE_USER_ID = "IHAVE_USER_ID";
+    public static final String IHAVE_ACCESS_TOKEN = "IHAVE_ACCESSTOKEN";
     public static final String GOOGLE_PHOTO_ALBUMID = "GOOGLE_PHOTO_ALBUMID";
+    public static final String GOOGLE_PHOTO_ALBUMID_UPLOADED = "GOOGLE_PHOTO_ALBUMID";
     public static final String GOOGLE_DRIVE_FOLDERID = "GOOGLE_DRIVE_FOLDERID";
 
 
