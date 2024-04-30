@@ -1,4 +1,4 @@
-package com.example.ihave2;
+package com.susarne.ihave2;
 
 import android.content.Context;
 

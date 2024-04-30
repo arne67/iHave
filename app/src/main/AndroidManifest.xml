@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.ihave2">
+    package="com.susarne.ihave2">
 
 
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION" />
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
+
+
 
     <application
         android:allowBackup="false"
@@ -17,7 +20,7 @@
         android:networkSecurityConfig="@xml/network_security_config"
         android:theme="@style/Theme.PlantsListActivity">
         <activity
-            android:name="com.example.ihave2.ui.login.LoginActivity"
+            android:name="com.susarne.ihave2.ui.login.LoginActivity"
             android:exported="true"
             >
             <intent-filter>
@@ -26,27 +29,27 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.example.ihave2.PlantEditActivity"
+            android:name="com.susarne.ihave2.PlantEditActivity"
             android:exported="false" />
         <activity
-            android:name="com.example.ihave2.PhotoListActivity"
+            android:name="com.susarne.ihave2.PhotoListActivity"
             android:exported="false" />
         <activity
-            android:name="com.example.ihave2.PhotoActivity"
+            android:name="com.susarne.ihave2.PhotoActivity"
             android:exported="false" />
         <activity
-            android:name="com.example.ihave2.PlantActivity"
+            android:name="com.susarne.ihave2.PlantActivity"
             android:exported="false" />
         <activity
-            android:name="com.example.ihave2.ui.login.RegisterActivity"
+            android:name="com.susarne.ihave2.ui.login.RegisterActivity"
             android:exported="false" />
 
         <activity
-            android:name="com.example.ihave2.MainActivity"
+            android:name="com.susarne.ihave2.MainActivity"
             android:exported="true">
 
             <intent-filter>
-                  <action android:name="com.example.ihave2.HANDLE_AUTHORIZATION_RESPONSE" />
+                  <action android:name="com.susarne.ihave2.HANDLE_AUTHORIZATION_RESPONSE" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
@@ -62,7 +65,7 @@
 
                 <data
                     android:path="/oauth2redirect"
-                    android:scheme="com.example.ihave2" />
+                    android:scheme="com.susarne.ihave2" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -72,7 +75,7 @@
 
                 <data
                     android:path="/logout"
-                    android:scheme="com.example.ihave2" />
+                    android:scheme="com.susarne.ihave2" />
             </intent-filter>
         </activity>
 
