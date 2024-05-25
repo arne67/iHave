@@ -32,10 +32,15 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.api.services.drive.model.User;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.susarne.ihave2.adapters.PlantsRecyclerAdapter;
 import com.susarne.ihave2.api.TestApiClient;
 import com.susarne.ihave2.api.TokenApiClient;
-import com.susarne.ihave2.models.PlantFlowerMonth;
 import com.susarne.ihave2.models.PlantWithLists;
 import com.susarne.ihave2.models.TokenRefreshDto;
 import com.susarne.ihave2.models.TokenRefreshRequestDto;
@@ -46,6 +51,7 @@ import com.susarne.ihave2.util.Token;
 import com.susarne.ihave2.util.CurrentUser;
 import com.susarne.ihave2.workers.BackupWorker;
 import com.susarne.ihave2.workers.GetPlantWorker;
+import com.susarne.ihave2.workers.GetUpdatedPlantWorker;
 import com.susarne.ihave2.workers.RecoverWorker;
 
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -113,6 +119,7 @@ public class MainActivity extends AppCompatActivity implements
     private static final int RC_SIGN_IN = 9001;
 
     private GoogleSignInClient mGoogleSignInClient;
+    private FirebaseAuth mAuth;
 
 // start of public methods ********************************************************************************
 
@@ -124,6 +131,7 @@ public class MainActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         //ContextSingleton.getInstance(getApplicationContext());
         //getSuperHeroes();
+        mAuth = FirebaseAuth.getInstance();
         connectToUi();
         getCallbackFromAuthPhoto();
         getCallbackFromTokenRequestPhoto();
@@ -369,6 +377,26 @@ public class MainActivity extends AppCompatActivity implements
                         recover_copy();
                         break;
                     }
+                    case R.id.get_new_updated_plants:{
+                        Log.d(TAG, "onMenuItemClick: get new updated plants");
+                        getNewUpdatedPlants();
+                        break;
+                    }
+                    case R.id.delete_all_plants:{
+                        Log.d(TAG, "onMenuItemClick: delete alle plants");
+                        deleteAllPlant();
+                        break;
+                    }
+                    case R.id.get_user_plants:{
+                        Log.d(TAG, "onMenuItemClick: get user plants");
+                        startGetPlantWorker();
+                        break;
+                    }
+                    case R.id.create_firebase_user:{
+                        Log.d(TAG, "onMenuItemClick: create_firebase_user");
+                        createFirebaseUser();
+                        break;
+                    }
                     case R.id.action_search:{
                         Log.d(TAG, "onMenuItemClick: searchbar");
                         break;
@@ -382,6 +410,49 @@ public class MainActivity extends AppCompatActivity implements
 
 
         return true;
+    }
+
+    private void createFirebaseUser() {
+        mAuth.createUserWithEmailAndPassword("kofoedspost@hotmail.com", "mak987x")
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            // Sign in success, update UI with the signed-in user's information
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            Log.d(TAG, "onComplete: createfirebaseuser ok");
+                            sendConfirmEmail(user);
+                        } else {
+                            // If sign in fails, display a message to the user.
+                            Toast.makeText(MainActivity.this, "Authentication failed.",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+    }
+
+    private void sendConfirmEmail(FirebaseUser user) {
+        user.sendEmailVerification();
+    }
+
+    private void deleteAllPlant() {
+        Runnable runnable = new Runnable() {
+            public void run() {
+                mPlantRepository.deleteAllPlants();
+            }
+        };
+        Thread thread = new Thread(runnable);
+        thread.start();
+
+    }
+
+    private void getNewUpdatedPlants() {
+        mWorkManager = WorkManager.getInstance(getApplication());
+        OneTimeWorkRequest getPlantRequest =
+                new OneTimeWorkRequest.Builder(GetUpdatedPlantWorker.class)
+                        .build();
+        mWorkManager.enqueue(getPlantRequest);
+
     }
 
     private void backup_copy() {
@@ -514,6 +585,7 @@ public class MainActivity extends AppCompatActivity implements
         mPlantRepository.retrievePlantsTask().observe(this, new Observer<List<PlantWithLists>>() {
             @Override
             public void onChanged(List<PlantWithLists> plants) {
+                Log.d(TAG, "onChanged: plants.size()"+plants.size());
                 if (mPlants.size() > 0) {
                     mPlants.clear();
                 }
@@ -553,18 +625,11 @@ public class MainActivity extends AppCompatActivity implements
         LocalDate currentdate = LocalDate.now();
         int month= currentdate.getMonthValue();
         Log.d(TAG, "filterPlantsFlowerNow: month"+month);
-        mPlants.removeIf(t -> !findPlantFlowerMonthByMonthNo(t.plantFlowerMonths,month));
+        //TODO
+        // mPlants.removeIf(t -> !findPlantFlowerMonthByMonthNo(t.plantFlowerMonths,month));
         mPlantRecyclerAdapter.notifyDataSetChanged();
     }
 
-    private boolean findPlantFlowerMonthByMonthNo(List<PlantFlowerMonth> plantFlowerMonths, int monthNo) {
-        Optional<PlantFlowerMonth> plantFlowerMonth;
-        plantFlowerMonth = plantFlowerMonths.stream()
-                .filter(pfm -> pfm.getMonthNo() == monthNo)
-                .findFirst();
-        if (plantFlowerMonth.isPresent()) return true;
-        else return false;
-    }
 
     private void initRecyclerView() {
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false);
@@ -588,6 +653,7 @@ public class MainActivity extends AppCompatActivity implements
         mPlantRecyclerAdapter.notifyDataSetChanged();
         //mPlantRepository.deletePlant(plant.plant);
         plant.plant.setDeleted(true);
+        plant.plant.setSyncedWithCloud(false);
         mPlantRepository.updatePlant(plant.plant);
     }
 

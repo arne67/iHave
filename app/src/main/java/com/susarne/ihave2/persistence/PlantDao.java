@@ -9,9 +9,9 @@ import androidx.room.Insert;
 import androidx.room.Query;
 import androidx.room.Transaction;
 import androidx.room.Update;
+import androidx.room.Upsert;
 
 import com.susarne.ihave2.models.Plant;
-import com.susarne.ihave2.models.PlantFlowerMonth;
 import com.susarne.ihave2.models.PlantPhoto;
 import com.susarne.ihave2.models.PlantWithLists;
 import com.susarne.ihave2.models.System;
@@ -26,35 +26,41 @@ public abstract class PlantDao {
     private static final String TAG = "PlantDao";
     @Insert
     public abstract void insertPlant(Plant plant);
+    @Upsert
+    public abstract void upsertPlant(Plant plant);
 
     @Update
     abstract void updatePlant(Plant plant);
 
     @Update
     abstract int updatePlantPhoto(PlantPhoto plantPhoto);
+    @Upsert
+    abstract void upsertPlantPhoto(PlantPhoto plantPhoto);
+    @Insert
+    public abstract void insertPlantPhotos(List<PlantPhoto> plantPhotos);
+    @Upsert
+    public abstract void upsertPlantPhotos(List<PlantPhoto> plantPhotos);
 
     @Update
-    abstract int updatePlantFlowerMonth(PlantFlowerMonth plantFlowerMonth);
+    abstract int updateSystem(System system);
+
+
 
     @Insert
     public abstract void insertPlantPhoto(PlantPhoto plantPhoto);
 
-    @Insert
-    public abstract void insertPlantFlowerMonth(PlantFlowerMonth plantFlowerMonth);
-
     @Delete
     abstract Completable deletePlant(Plant plant);
 
+    @Query("SELECT * FROM plants where plantId=:id" )
+    public abstract LiveData<PlantWithLists> getPlant(String id);
 
     @Query("SELECT * FROM plants where plantId=:id")
-    public abstract LiveData<PlantWithLists> getPlant(int id);
-
-    @Query("SELECT * FROM plants where plantId=:id")
-    public abstract PlantWithLists getPlantSync(int id);
+    public abstract PlantWithLists getPlantSync(String id);
 
     //@Query("SELECT * FROM plants p where p.syncedWithCloud=0 limit 1")
     //public abstract PlantWithLists getNotUploadedPlantSync();
-    @Query("SELECT * FROM plants p where p.syncedWithCloud=0 or exists (select 'x' from plantPhotos pp where pp.plantId = p.plantId and pp.syncedWithCloud=0) or exists (select 'x' from plantFlowerMonths pf where pf.plantId = p.plantId and pf.syncedWithCloud=0) order by p.plantId desc limit 1")
+    @Query("SELECT * FROM plants p where p.syncedWithCloud=0 or exists (select 'x' from plantPhotos pp where pp.plantId = p.plantId and pp.syncedWithCloud=0)  order by p.plantId desc limit 1")
     //@Query("SELECT * FROM plants p where p.syncedWithCloud=0 limit 1")
     public abstract PlantWithLists getNotUploadedPlantSync();
 
@@ -63,7 +69,7 @@ public abstract class PlantDao {
     public abstract PlantWithLists getFirstPlant();
 
     @Query("update plants set syncedWithCloud=1, createdInCloud=1 where plantId=:plantId")
-    public abstract int markPlantAsUploaded(int plantId);
+    public abstract int markPlantAsUploaded(String plantId);
     @Transaction
     @Query("SELECT * FROM plants where deleted=0 order by plantId")
     public abstract LiveData<List<PlantWithLists>> getPlants();
@@ -77,28 +83,14 @@ public abstract class PlantDao {
     public abstract LiveData<List<PlantWithLists>> getPlantsWithLen3();
 
 
-    @Query("SELECT max(plantId) FROM plants")
-    public abstract LiveData<Integer> getMaxPlantId();
-
     @Query("SELECT name FROM sqlite_master WHERE type='table'")
     public abstract List<String> getAllTableNames();
 
     //PlantFLowMonth
 
-    @Transaction
-    public void deleteAndCreatePlantFlowerMonths(int plantId, List<PlantFlowerMonth> plantFlowerMonths)
-            throws InterruptedException {
-        Log.d("PlantDato", "deleteAndCreate: ");
-        Log.d("PlantDato", "deleteAndCreate: om 5 sek gemmer vi ");
-        //Thread.sleep(1);
-        Log.d("PlantDato", "deleteAndCreate: nu sek gemmer vi ");
-
-        deleteFlowerMonthsForPlant(plantId);
-        insertPlantFlowerMonths(plantFlowerMonths);
-    }
 
     @Transaction
-    public void deleteAndCreatePlantPhotos(int plantId, List<PlantPhoto> plantPhotos)
+    public void deleteAndCreatePlantPhotos(String plantId, List<PlantPhoto> plantPhotos)
             throws InterruptedException {
         Log.d("PlantDato", "deleteAndCreate: ");
         Log.d("PlantDato", "deleteAndCreate: om 5 sek gemmer vi ");
@@ -110,11 +102,21 @@ public abstract class PlantDao {
     }
 
     @Transaction
+    public void upsertPlantsWithLists(List<PlantWithLists> plantsWithLists, System system) {
+
+        for (PlantWithLists p: plantsWithLists) {
+            upsertPlant(p.plant);
+            upsertPlantPhotos(p.plantPhotos);
+        }
+        updateSystem(system);
+    }
+
+
+    @Transaction
     public void insertPlantWithLists(PlantWithLists plantWithLists)
             throws InterruptedException {
 
         insertPlant(plantWithLists.plant);
-        insertPlantFlowerMonths(plantWithLists.plantFlowerMonths);
         insertPlantPhotos(plantWithLists.plantPhotos);
 
     }
@@ -125,8 +127,6 @@ public abstract class PlantDao {
         Log.d(TAG, "updatePlantWithLists: "+plantWithLists.plant.getTitle());
         updatePlant(plantWithLists.plant);
 
-        deleteFlowerMonthsForPlant(plantWithLists.plant.getPlantId());
-        insertPlantFlowerMonths(plantWithLists.plantFlowerMonths);
 
         deletePhotosForPlant(plantWithLists.plant.getPlantId());
         insertPlantPhotos(plantWithLists.plantPhotos);
@@ -135,17 +135,11 @@ public abstract class PlantDao {
     }
 
 
-    @Query("DELETE FROM plantFlowerMonths where plantId = :plantId")
-    public abstract int deleteFlowerMonthsForPlant(int plantId);
 
-    @Insert
-    public abstract void insertPlantFlowerMonths(List<PlantFlowerMonth> plantFlowerMonths);
+
 
     @Query("DELETE FROM plantPhotos where plantId = :plantId")
-    public abstract int deletePhotosForPlant(int plantId);
-
-    @Insert
-    public abstract void insertPlantPhotos(List<PlantPhoto> plantPhotos);
+    public abstract int deletePhotosForPlant(String plantId);
 
     @Insert
     public abstract void insertSystem(System system);
@@ -154,10 +148,11 @@ public abstract class PlantDao {
     public abstract System getSystemSync(int id);
     @Query("DELETE FROM plantPhotos")
     public abstract int deleteAllPlantPhotos();
-    @Query("DELETE FROM plantFlowerMonths")
-    public abstract int deleteAllPlantFlowerMonths();
     @Query("DELETE FROM plants")
     public abstract int deleteAllPlants();
 
+
+    @Query("update system set lastGetUpdatedPlantsUntil=:lastGetUpdatedPlantsUntil where systemId=0")
+    public abstract int setLastGetUpdatedPlantsUntil(String lastGetUpdatedPlantsUntil);
 
 }

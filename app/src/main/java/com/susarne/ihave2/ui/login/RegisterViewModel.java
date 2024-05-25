@@ -31,7 +31,7 @@ public class RegisterViewModel extends ViewModel {
         return registerResult;
     }
 
-    public void register(String userName, String password, String fullName, String email) {
+    public void register(String userId, String password, String fullName, String email) {
         // can be launched in a separate asynchronous job
         Log.d(TAG, "register: Thread: "+Thread.currentThread().getName());
         Thread t = new Thread(new Runnable() {
@@ -39,7 +39,7 @@ public class RegisterViewModel extends ViewModel {
             public void run() {
                 Log.d(TAG, "run: Thread: " + Thread.currentThread().getName());
                 Log.d(TAG, "run: vi kalder repository register");
-                Result<LoggedInUser> result = loginRepository.register(userName, password,fullName,email);
+                Result<LoggedInUser> result = loginRepository.register(userId, password,fullName,email);
 
                 if (result instanceof Result.Success) {
                     LoggedInUser data = ((Result.Success<LoggedInUser>) result).getData();
@@ -60,10 +60,8 @@ public class RegisterViewModel extends ViewModel {
         t.start();
     }
 
-    public void registerDataChanged(String username, String password, String passwordRepeated,String fullName,String email) {
-        if (!isUserNameValid(username)) {
-            registerFormState.setValue(new RegisterFormState(R.string.invalid_username, null,null,null,null));
-        } else if (!isPasswordValid(password)) {
+    public void registerDataChanged(String password, String passwordRepeated,String fullName,String email) {
+        if (!isPasswordValid(password)) {
             registerFormState.setValue(new RegisterFormState(null, R.string.invalid_password,null,null,null));
         } else if (!isPasswordRepeatedValid(password,passwordRepeated)) {
             registerFormState.setValue(new RegisterFormState(null, null,R.string.invalid_password_repeated,null,null));

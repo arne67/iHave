@@ -93,7 +93,11 @@ public class GooglePhoto {
 
     public static void createPhotoDir(Context context) {
         File mediaStorageDir = new File(context.getExternalFilesDir(Environment.DIRECTORY_PICTURES), APP_TAG);
-        mediaStorageDir.mkdirs();
+        if (!mediaStorageDir.exists()){
+            mediaStorageDir.mkdirs();
+        } else {
+            Log.d(TAG, "createPhotoDir: directory findes allerede");
+        }
     }
 
 }

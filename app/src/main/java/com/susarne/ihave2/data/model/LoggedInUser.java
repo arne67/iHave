@@ -5,17 +5,17 @@ package com.susarne.ihave2.data.model;
  */
 public class LoggedInUser {
 
-    private int userId;
+    private String userId;
     private String name;
     private String accessToken;
 
-    public LoggedInUser(int userId, String name, String accessToken) {
+    public LoggedInUser(String userId, String name, String accessToken) {
         this.userId = userId;
         this.name = name;
         this.accessToken = accessToken;
     }
 
-    public int getUserId() {
+    public String getUserId() {
         return userId;
     }
 

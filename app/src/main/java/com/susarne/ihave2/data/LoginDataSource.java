@@ -48,9 +48,9 @@ public class LoginDataSource {
 //        }
     }
 
-    public Result<LoggedInUser> register(String userName, String password,String fullName, String email) {
+    public Result<LoggedInUser> register(String userId, String password,String fullName, String email) {
         Log.d(TAG, "login: Thread: "+Thread.currentThread().getName());
-        RegisterRequestDto registerRequestDto = new RegisterRequestDto(userName,password,fullName,email);
+        RegisterRequestDto registerRequestDto = new RegisterRequestDto(userId,password,fullName,email);
 
         Log.d(TAG, "register: vi kalder api register");
         Call<LoggedInUser> call = PlantApiClient.getInstance().getMyApi().register("1",registerRequestDto);

@@ -36,7 +36,7 @@ public class SystemStartWorker extends Worker {
     private void createSystemSync() {
         System system=new System();
         system.setSystemId(1);
-        system.setUserId(1);
+        system.setUserId("");
         system.setLastUsedId(0);
         mPlantRepository.insertSystem(system);
     }

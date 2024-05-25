@@ -7,6 +7,7 @@ import com.susarne.ihave2.R;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.UUID;
 
 public class Utility {
     public static String getCurrentTimestamp(){
@@ -65,5 +66,12 @@ public class Utility {
     public static String getIhaveCloudBaseUrl(){
         Context context=ContextSingleton.getContekst();
         return context.getResources().getString(R.string.ihaveCloudBaseUrl);
+    }
+    public static String getUuid(){
+        UUID uuid = UUID.randomUUID();
+
+        // Konverter UUID til en streng
+        String uuidString = uuid.toString();
+        return uuidString;
     }
 }

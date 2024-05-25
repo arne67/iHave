@@ -4,6 +4,7 @@ import static com.google.common.base.Predicates.isNull;
 
 import android.app.Activity;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -26,6 +27,11 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.susarne.ihave2.BuildConfig;
 import com.susarne.ihave2.MainActivity;
 import com.susarne.ihave2.R;
@@ -54,6 +60,7 @@ public class LoginActivity extends AppCompatActivity {
     Button mSelectRegisterButton;
     ProgressBar mLoadingProgressBar;
 
+    private FirebaseAuth mAuth;
 
     private static final String TAG = "LoginActivity";
 
@@ -66,10 +73,11 @@ public class LoginActivity extends AppCompatActivity {
 
         mPlantRepository = new PlantRepository(this);
 
+        mAuth = FirebaseAuth.getInstance();
+
         initiateUi();
         setListeners();
         startLoginObservers();
-
 
 
         Log.d(TAG, "onCreate: buildType: " + BuildConfig.BUILD_TYPE.toString());
@@ -82,21 +90,30 @@ public class LoginActivity extends AppCompatActivity {
 
         Log.d(TAG, "onCreate: getsavedlogin2");
 
-        if (getSavedLogin()) {
+//        if (getSavedLogin()) {
+//            Log.d(TAG, "onCreate: startmain");
+//            startMainActivity();
+//            finish();
+//        } else {
+//            if (unconfirmedAccountCreation()) {
+//                setStateUnconfirmed();
+//            } else {
+//                setStateRegisterOrLogin();
+//            }
+//        }
+        //firebase authentification i stedet for
+        //mAuth.signOut(); //vi signer ud for at teste at det er en ny bruger
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+
+        if (currentUser != null) {
             Log.d(TAG, "onCreate: startmain");
             startMainActivity();
             finish();
         } else {
-            if (unconfirmedAccountCreation()) {
-                setStateUnconfirmed();
-            } else {
-                setStateRegisterOrLogin();
-            }
+            setStateRegisterOrLogin();
         }
 
-        //startLoginProcedure();
     }
-
 
 
     private void setListeners() {
@@ -105,8 +122,11 @@ public class LoginActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Log.d(TAG, "onClick: loginbutton");
                 mLoadingProgressBar.setVisibility(View.VISIBLE);
-                loginViewModel.login(mUsernameEditText.getText().toString(),
+
+                login(mUsernameEditText.getText().toString(),
                         mPasswordEditText.getText().toString());
+//                loginViewModel.login(mUsernameEditText.getText().toString(),
+//                        mPasswordEditText.getText().toString());
             }
         });
         mSelectLoginButton.setOnClickListener(new View.OnClickListener() {
@@ -124,6 +144,36 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private void login(String email, String password) {
+        Log.d(TAG, "login: "+email+"/"+password);
+        mAuth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            // Sign in success, update UI with the signed-in user's information
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            if (user.isEmailVerified()) {
+                                // Proceed with authenticated and verified user
+                                setResult(Activity.RESULT_OK);
+                                //savelogin (userid og accesstoken) skal ske ved svar på registrering i railway
+                                //saveLogin(loginResult.getSuccess());
+                                initiateAtLogin();
+                                startMainActivity();
+                                finish();
+                            } else {
+                                // Email is not verified
+                                setStateUnconfirmed();                            }
+                        } else {
+                            // If sign in fails, display a message to the user.
+                            Toast.makeText(LoginActivity.this, R.string.login_failed,
+                                    Toast.LENGTH_SHORT).show();
+                            Log.d(TAG, "onComplete: "+task.getException().toString());
+                        }
+                    }
+                });
     }
 
     private boolean isRegisterValid() {
@@ -191,7 +241,6 @@ public class LoginActivity extends AppCompatActivity {
     }
 
 
-
     private boolean unconfirmedAccountCreation() {
         return false;
     }
@@ -224,7 +273,7 @@ public class LoginActivity extends AppCompatActivity {
                 }
                 mLoadingProgressBar.setVisibility(View.GONE);
                 if (loginResult.getError() != null) {
-                    if (loginResult.isOnlyMissingConfirmation()){
+                    if (loginResult.isOnlyMissingConfirmation()) {
                         setStateUnconfirmed();
                     } else {
                         showLoginFailed(loginResult.getError());
@@ -235,6 +284,7 @@ public class LoginActivity extends AppCompatActivity {
                     updateUiWithUser(loginResult.getSuccess());
                     setResult(Activity.RESULT_OK);
                     saveLogin(loginResult.getSuccess());
+                    initiateAtLogin();
                     startMainActivity();
                     finish();
                 }
@@ -280,14 +330,14 @@ public class LoginActivity extends AppCompatActivity {
 
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    loginViewModel.login(mUsernameEditText.getText().toString(),
-                            mPasswordEditText.getText().toString());
-                }
+
                 return false;
             }
         });
 
+    }
+
+    private void initiateAtLogin() {
     }
 
     private void startMainActivity() {
@@ -301,14 +351,14 @@ public class LoginActivity extends AppCompatActivity {
 
     private boolean getSavedLogin() {
         Log.d(TAG, "getSavedLogin: start");
-        mAccessToken= CurrentUser.getAccessToken();
-        if (mAccessToken==null) return false;
+        mAccessToken = CurrentUser.getAccessToken();
+        if (mAccessToken == null) return false;
         else return true;
 
     }
 
     private void saveLogin(LoggedInUserView loggedInUserView) {
-        Log.d(TAG, "saveLogin: "+loggedInUserView.getAccessToken());
+        Log.d(TAG, "saveLogin: " + loggedInUserView.getAccessToken());
         CurrentUser.putUserId(loggedInUserView.getUserId());
         CurrentUser.putAccessToken(loggedInUserView.getAccessToken());
     }

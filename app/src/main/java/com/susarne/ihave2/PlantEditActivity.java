@@ -36,11 +36,11 @@ import androidx.core.content.FileProvider;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.susarne.ihave2.api.GooglePhotoApiClient;
 import com.susarne.ihave2.models.GooglePhotos.MediaItem;
 import com.susarne.ihave2.models.IntentExtra.PhotoListActivityIntentExtra;
 import com.susarne.ihave2.models.Plant;
-import com.susarne.ihave2.models.PlantFlowerMonth;
 import com.susarne.ihave2.models.PlantPhoto;
 import com.susarne.ihave2.models.PlantWithLists;
 import com.susarne.ihave2.persistence.PlantRepository;
@@ -55,6 +55,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import retrofit2.Call;
@@ -105,7 +106,7 @@ public class PlantEditActivity extends AppCompatActivity implements
     private int mCurrentPhotoIntent;
     private ActivityResultLauncher<Intent> activityResultLauncher;
     private File mMediaStorageDir, mImageFile;
-    private long mTimeLast=System.currentTimeMillis();
+    private long mTimeLast = System.currentTimeMillis();
 
     private String mAccessTokenString;
     private String mRefreshTokenString;
@@ -113,84 +114,86 @@ public class PlantEditActivity extends AppCompatActivity implements
 
     PlantEditActivityViewModel mViewModel;
 
+    private FirebaseAuth mAuth;
+
 // start of public methods ********************************************************************************
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-    //private void xx1(Bundle savedInstanceState){
+        //private void xx1(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         //createAlbum();
-        speed(TAG,1);
+        mAuth = FirebaseAuth.getInstance();
+        speed(TAG, 1);
         //restoreState();
         if (mAccessTokenString != null) {
             //getAlbums();
         }
 
-        speed(TAG,2);
+        speed(TAG, 2);
         setContentView(R.layout.activity_plant_edit);
-        speed(TAG,3);
+        speed(TAG, 3);
         mViewModel = new ViewModelProvider(this).get(PlantEditActivityViewModel.class);
-        speed(TAG,4);
+        speed(TAG, 4);
         mViewModel.initiate(getApplication());
-        speed(TAG,5);
+        speed(TAG, 5);
         connectToViewElements();
-        speed(TAG,6);
+        speed(TAG, 6);
 
 
         getCallbackFromCamera();
-        speed(TAG,7);
+        speed(TAG, 7);
         getCallbackFromGallery();
-        speed(TAG,8);
+        speed(TAG, 8);
         getCallbackFromPhotoListActivity();
         //getCallbackFromAuth();
         //getCallbackFromTokenRequest();
 
-        speed(TAG,9);
+        speed(TAG, 9);
         mPlantRepository = new PlantRepository(this);
 
 
-
-        speed(TAG,10);
+        speed(TAG, 10);
         mEditedPlant = mViewModel.getEditedPlant();
-        speed(TAG,11);
+        speed(TAG, 11);
         if (mEditedPlant != null) {
-            speed(TAG,12);
+            speed(TAG, 12);
             createRestOfEditedPlant();
-            speed(TAG,13);
+            speed(TAG, 13);
             copyEditedPlantToView();
 
 
         } else {
             if (getIncomingIntent()) {
                 //this is an existing plant
-                speed(TAG,14);
+                speed(TAG, 14);
                 createRestOfEditedPlant();
-                speed(TAG,15);
+                speed(TAG, 15);
                 getSavedPlant();
-                speed(TAG,16);
+                speed(TAG, 16);
 
                 //copyEditedPlantToView();
             } else {
                 //this is a new plant
-                speed(TAG,17);
+                speed(TAG, 17);
                 createRestOfEditedPlant();
-                speed(TAG,18);
+                speed(TAG, 18);
                 setUserId();
                 findPlantId();
-                speed(TAG,19);
+                speed(TAG, 19);
                 setNewPlantView();
-                speed(TAG,20);
+                speed(TAG, 20);
                 copyViewToEditedPlant();
 
             }
         }
 
-        speed(TAG,21);
+        speed(TAG, 21);
         setVisibility();
-        speed(TAG,22);
+        speed(TAG, 22);
         setListeners();
-        speed(TAG,23);
+        speed(TAG, 23);
         //helpers();
 
 
@@ -202,7 +205,7 @@ public class PlantEditActivity extends AppCompatActivity implements
     }
 
     private void setUserId() {
-        mEditedPlant.plant.setUserId(CurrentUser.getUserId());
+        mEditedPlant.plant.setCreatedBy(mAuth.getCurrentUser().getUid());
     }
 
 
@@ -223,11 +226,13 @@ public class PlantEditActivity extends AppCompatActivity implements
             @Override
             public void onChanged(@Nullable final PlantWithLists plantWithLists) {
                 // Update the UI,
-                Log.d(TAG, "onChanged:plantwithlists"+plantWithLists);
+                Log.d(TAG, "onChanged:plantwithlists" + plantWithLists);
+                Collections.sort(plantWithLists.plantPhotos, (c1, c2) -> c1.getPhotoName().compareTo(c2.getPhotoName()));
+
                 mViewModel.setSavedPlant(plantWithLists);
-                Log.d(TAG, "onChanged: xxy "+plantWithLists.toString());
-                mEditedPlant=new PlantWithLists(plantWithLists);
-                Log.d(TAG, "onChanged: bb2-1 "+mEditedPlant.plantPhotos.toString());
+                Log.d(TAG, "onChanged: xxy " + plantWithLists.toString());
+                mEditedPlant = new PlantWithLists(plantWithLists);
+                Log.d(TAG, "onChanged: bb2-1 " + mEditedPlant.plantPhotos.toString());
                 copyEditedPlantToView();
 
             }
@@ -238,10 +243,10 @@ public class PlantEditActivity extends AppCompatActivity implements
     }
 
     private void createRestOfEditedPlant() {
-        if (mEditedPlant==null) mEditedPlant=new PlantWithLists();
-        if (mEditedPlant.plant==null) mEditedPlant.plant = new Plant();
-        if (mEditedPlant.plantFlowerMonths==null) mEditedPlant.plantFlowerMonths = new ArrayList<PlantFlowerMonth>();
-        if (mEditedPlant.plantPhotos==null) mEditedPlant.plantPhotos = new ArrayList<PlantPhoto>();
+        if (mEditedPlant == null) mEditedPlant = new PlantWithLists();
+        if (mEditedPlant.plant == null) mEditedPlant.plant = new Plant();
+        if (mEditedPlant.plantPhotos == null)
+            mEditedPlant.plantPhotos = new ArrayList<PlantPhoto>();
 
     }
 
@@ -261,92 +266,117 @@ public class PlantEditActivity extends AppCompatActivity implements
         //mFinalPlant.plant.setCategory(); bliver sat når den vælges i menu
         Log.d(TAG, "storeEditedPlantInViewModel: mCategoriMenu: " + mCategoryMenu.toString());
 
-        for (int i = 0; i < 12; i++) {
-            if (mCheckBoxFlower[i].isChecked()) {
-                Log.d(TAG, "copyViewToEditedPlant: "+i+" "+mCheckBoxFlower[i].isChecked()+" "+mCheckBoxFlowerIdxInEditedPlant[i] );
-                if (mCheckBoxFlowerIdxInEditedPlant[i] == null) {
-                    PlantFlowerMonth plantFlowerMonth = new PlantFlowerMonth();
-                    plantFlowerMonth.setUserId(mEditedPlant.plant.getUserId());
-                    plantFlowerMonth.setPlantId(mEditedPlant.plant.getPlantId());
-                    plantFlowerMonth.setMonthNo(i + 1);
-                    mEditedPlant.plantFlowerMonths.add(plantFlowerMonth);
-                    mCheckBoxFlowerIdxInEditedPlant[i]=mEditedPlant.plantFlowerMonths.size()-1;
-                } else {
-                    if (mEditedPlant.plantFlowerMonths.get(mCheckBoxFlowerIdxInEditedPlant[i]).isDeleted()){
-                        mEditedPlant.plantFlowerMonths.get(mCheckBoxFlowerIdxInEditedPlant[i]).setDeleted(false);
-                    }
-                }
-            } else { // checkboxen er IKKE tjekket af
-                if (!(mCheckBoxFlowerIdxInEditedPlant[i] == null) ){ // den er allerede oprettet i mEditedPlant
-                    if (!mEditedPlant.plantFlowerMonths.get(mCheckBoxFlowerIdxInEditedPlant[i]).isDeleted()) { //den er ikke deleted i mEditedPlant
-                        Log.d(TAG, "savePlant: bb1-1-1 "+mViewModel.getSavedPlant().toString());
-                        mEditedPlant.plantFlowerMonths.get(mCheckBoxFlowerIdxInEditedPlant[i]).setDeleted(true);
-                        Log.d(TAG, "savePlant: bb1-1-2 "+mViewModel.getSavedPlant().toString());
-                    }
-                }
-            }
-        }
-        //mEditedPlant.plantPhotos bliver opdateret i forbindelse tilføjelse/sletning
+
+        if (mCheckBoxFlower[0].isChecked())
+            mEditedPlant.plant.setBloomsMonth1(true);
+        else mEditedPlant.plant.setBloomsMonth1(false);
+        if (mCheckBoxFlower[1].isChecked())
+            mEditedPlant.plant.setBloomsMonth2(true);
+        else mEditedPlant.plant.setBloomsMonth2(false);
+        if (mCheckBoxFlower[2].isChecked())
+            mEditedPlant.plant.setBloomsMonth3(true);
+        else mEditedPlant.plant.setBloomsMonth3(false);
+        if (mCheckBoxFlower[3].isChecked())
+            mEditedPlant.plant.setBloomsMonth4(true);
+        else mEditedPlant.plant.setBloomsMonth4(false);
+        if (mCheckBoxFlower[4].isChecked())
+            mEditedPlant.plant.setBloomsMonth5(true);
+        else mEditedPlant.plant.setBloomsMonth5(false);
+        if (mCheckBoxFlower[5].isChecked())
+            mEditedPlant.plant.setBloomsMonth6(true);
+        else mEditedPlant.plant.setBloomsMonth6(false);
+        if (mCheckBoxFlower[6].isChecked())
+            mEditedPlant.plant.setBloomsMonth7(true);
+        else mEditedPlant.plant.setBloomsMonth7(false);
+        if (mCheckBoxFlower[7].isChecked())
+            mEditedPlant.plant.setBloomsMonth8(true);
+        else mEditedPlant.plant.setBloomsMonth8(false);
+        if (mCheckBoxFlower[8].isChecked())
+            mEditedPlant.plant.setBloomsMonth9(true);
+        else mEditedPlant.plant.setBloomsMonth9(false);
+        if (mCheckBoxFlower[9].isChecked())
+            mEditedPlant.plant.setBloomsMonth10(true);
+        else mEditedPlant.plant.setBloomsMonth10(false);
+        if (mCheckBoxFlower[10].isChecked())
+            mEditedPlant.plant.setBloomsMonth11(true);
+        else mEditedPlant.plant.setBloomsMonth11(false);
+        if (mCheckBoxFlower[11].isChecked())
+            mEditedPlant.plant.setBloomsMonth12(true);
+        else mEditedPlant.plant.setBloomsMonth12(false);
+
+
+//mEditedPlant.plantPhotos bliver opdateret i forbindelse tilføjelse/sletning
 
         Log.d(TAG, "storeEditedPlantFromViewModel: MeditedPlant: " + mEditedPlant.toString());
     }
 
     private void copyEditedPlantToView() {
         //nytfelt-detail
-        speed(TAG,101);
+        speed(TAG, 101);
         mViewTitle.setText(mEditedPlant.plant.getTitle());
         mPlantTitle.getEditText().setText(mEditedPlant.plant.getTitle());
         //mPlantId.setText(String.valueOf(mEditedPlant.plant.getPlantId()));
         mPlantText.getEditText().setText(mEditedPlant.plant.getContent());
 
         mMainPhotoName = mEditedPlant.plant.getMainPhotoName();
-        speed(TAG,102);
+        speed(TAG, 102);
         showMainPhoto();
-        speed(TAG,103);
+        speed(TAG, 103);
+
+        if (mEditedPlant.plant.isBloomsMonth1()) mCheckBoxFlower[0].setChecked(true);
+        else mCheckBoxFlower[0].setChecked(false);
+        if (mEditedPlant.plant.isBloomsMonth2()) mCheckBoxFlower[1].setChecked(true);
+        else mCheckBoxFlower[1].setChecked(false);
+        if (mEditedPlant.plant.isBloomsMonth3()) mCheckBoxFlower[2].setChecked(true);
+        else mCheckBoxFlower[2].setChecked(false);
+        if (mEditedPlant.plant.isBloomsMonth4()) mCheckBoxFlower[3].setChecked(true);
+        else mCheckBoxFlower[3].setChecked(false);
+        if (mEditedPlant.plant.isBloomsMonth5()) mCheckBoxFlower[4].setChecked(true);
+        else mCheckBoxFlower[4].setChecked(false);
+        if (mEditedPlant.plant.isBloomsMonth6()) mCheckBoxFlower[5].setChecked(true);
+        else mCheckBoxFlower[5].setChecked(false);
+        if (mEditedPlant.plant.isBloomsMonth7()) mCheckBoxFlower[6].setChecked(true);
+        else mCheckBoxFlower[6].setChecked(false);
+        if (mEditedPlant.plant.isBloomsMonth8()) mCheckBoxFlower[7].setChecked(true);
+        else mCheckBoxFlower[7].setChecked(false);
+        if (mEditedPlant.plant.isBloomsMonth9()) mCheckBoxFlower[8].setChecked(true);
+        else mCheckBoxFlower[8].setChecked(false);
+        if (mEditedPlant.plant.isBloomsMonth10()) mCheckBoxFlower[9].setChecked(true);
+        else mCheckBoxFlower[9].setChecked(false);
+        if (mEditedPlant.plant.isBloomsMonth11()) mCheckBoxFlower[10].setChecked(true);
+        else mCheckBoxFlower[10].setChecked(false);
+        if (mEditedPlant.plant.isBloomsMonth12()) mCheckBoxFlower[11].setChecked(true);
+        else mCheckBoxFlower[11].setChecked(false);
+
+        speed(TAG, 104);
 
 
-        Log.d(TAG, "copyEditedPlantToView: mEditedPlant.plantFlowerMonths.size() "+mEditedPlant.plantFlowerMonths.size());
-        Log.d(TAG, "copyEditedPlantToView: mEditedPlant.plantFlowerMonths.toString() bb2-1 "+mEditedPlant.plantFlowerMonths.toString());
+        showCollage(mEditedPlant.plantPhotos, mMultiPhoto, mPhotocount, this);
 
-        for (int i = 0; i < mEditedPlant.plantFlowerMonths.size(); i++) {
-            int monthNo = mEditedPlant.plantFlowerMonths.get(i).getMonthNo();
-            if (!mEditedPlant.plantFlowerMonths.get(i).isDeleted()){
-                Log.d(TAG, "copyEditedPlantToView: bb2-1 "+i+" "+monthNo);
-                mCheckBoxFlower[monthNo-1].setChecked(true);
-            } else {
-                mCheckBoxFlower[monthNo-1].setChecked(false);
-            }
-            mCheckBoxFlowerIdxInEditedPlant[monthNo-1]=i;
-        }
-        speed(TAG,104);
-
-
-        showCollage(mEditedPlant.plantPhotos,mMultiPhoto,mPhotocount,this);
-
-        speed(TAG,105);
+        speed(TAG, 105);
 
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
                 R.array.category_array, android.R.layout.simple_spinner_item);
 // Specify the layout to use when the list of choices appears
-        speed(TAG,106);
+        speed(TAG, 106);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        speed(TAG,107);
+        speed(TAG, 107);
         mCategoryMenu.setAdapter(adapter);
-        speed(TAG,108);
+        speed(TAG, 108);
         mCategoryMenu.setText(getResources().getStringArray(R.array.category_array)[mEditedPlant.plant.getCategory()], false);
-        speed(TAG,109);
+        speed(TAG, 109);
 
     }
 
 
-    private void showMainPhoto(){
+    private void showMainPhoto() {
         mMediaStorageDir = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), APP_TAG);
-        Log.d(TAG, "showMainPhoto: "+mMainPhotoName);
+        Log.d(TAG, "showMainPhoto: " + mMainPhotoName);
         if (mMainPhotoName != null) {
             mImageFile = new File(mMediaStorageDir.getPath() + File.separator + mMainPhotoName);
             Bitmap bitmap = BitmapFactory.decodeFile(mImageFile.getAbsolutePath());
             mMainPhoto.setBackgroundResource(android.R.color.transparent);
-            Log.d(TAG, "showMainPhoto: bitmap: "+bitmap);
+            Log.d(TAG, "showMainPhoto: bitmap: " + bitmap);
             mMainPhoto.setImageBitmap(bitmap);
             mMainPhotoButton.setText("Skift billede");
         } else {
@@ -373,17 +403,17 @@ public class PlantEditActivity extends AppCompatActivity implements
 
     @Override
     public void onClick(View view) {
-        Log.d(TAG, "onClick: getid: "+view.getId());
+        Log.d(TAG, "onClick: getid: " + view.getId());
 
         switch (view.getId()) {
             case R.id.toolbar_check: {
-                speed(TAG,200);
+                speed(TAG, 200);
                 savePlant();
-                speed(TAG,200);
+                speed(TAG, 200);
                 Log.d(TAG, "onClick: 1 xxy");
-                speed(TAG,200);
+                speed(TAG, 200);
                 returnPlant();
-                speed(TAG,200);
+                speed(TAG, 200);
                 Log.d(TAG, "onClick: 2");
                 finish();
                 break;
@@ -430,7 +460,7 @@ public class PlantEditActivity extends AppCompatActivity implements
 
     @Override
     public void onBackPressed() {
-            onClick(mCheck);
+        onClick(mCheck);
     }
 
 // end of public methods  **********************************************************************************
@@ -465,29 +495,29 @@ public class PlantEditActivity extends AppCompatActivity implements
                     public void onActivityResult(ActivityResult result) {
                         Log.d(TAG, "onActivityResult: Gallery");
                         Log.d(TAG, "onActivityResult: " + result.getResultCode());
-                        Log.d(TAG, "onActivityResult: result.getData: " + result);
-                        Log.d(TAG, "onActivityResult: result.getData getData: " + result.getData().getData());
-                        Uri inputUri = result.getData().getData();
+                        if (result.getResultCode() == RESULT_OK) {
+                            Log.d(TAG, "onActivityResult: result.getData: " + result);
+                            Log.d(TAG, "onActivityResult: result.getData getData: " + result.getData().getData());
+                            Uri inputUri = result.getData().getData();
 
-                        try {
-                            InputStream fileInputStream = PlantEditActivity.this.getContentResolver().openInputStream(inputUri);
-                            mPhotoFileName = getPhotoFileName();
-                            Log.d(TAG, "onActivityResult: mPhotoFIleName" + mPhotoFileName);
-                            File targetFile = getPhotoFileUri(mPhotoFileName);
-                            copyInputStreamToFile(fileInputStream, targetFile);
+                            try {
+                                InputStream fileInputStream = PlantEditActivity.this.getContentResolver().openInputStream(inputUri);
+                                mPhotoFileName = getPhotoFileName();
+                                Log.d(TAG, "onActivityResult: mPhotoFIleName" + mPhotoFileName);
+                                File targetFile = getPhotoFileUri(mPhotoFileName);
+                                copyInputStreamToFile(fileInputStream, targetFile);
 
 
 //                            File mediaStorageDir = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), APP_TAG);
 //                            File imageFile = new File(mediaStorageDir.getPath() + File.separator + mPhotoFileName);
-                            Bitmap bitmap = BitmapFactory.decodeFile(targetFile.getAbsolutePath());
-                            savePhotoFromIntent(bitmap);
+                                Bitmap bitmap = BitmapFactory.decodeFile(targetFile.getAbsolutePath());
+                                savePhotoFromIntent(bitmap);
 
 
-                        } catch (IOException e) {
-                            e.printStackTrace();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                         }
-
-
                     }
                 }
         );
@@ -499,8 +529,8 @@ public class PlantEditActivity extends AppCompatActivity implements
             case MAIN_PHOTO_INTENT: {
                 Log.d(TAG, "onActivityResult: mPhotoFileName");
                 //saveSmallFile(bitmap, mPhotoFileName);
-                addMultiPhoto(mPhotoFileName,true);
-                showCollage(mEditedPlant.plantPhotos,mMultiPhoto,mPhotocount,this);
+                addMultiPhoto(mPhotoFileName, true);
+                showCollage(mEditedPlant.plantPhotos, mMultiPhoto, mPhotocount, this);
                 mEditedPlant.plant.setMainPhotoName(mPhotoFileName);
                 mMainPhotoName = mEditedPlant.plant.getMainPhotoName();
                 showMainPhoto();
@@ -508,8 +538,8 @@ public class PlantEditActivity extends AppCompatActivity implements
             }
             case MULTI_PHOTO_INTENT: {
                 Log.d(TAG, "onActivityResult: MULTI_PHOTO_INTENT");
-                addMultiPhoto(mPhotoFileName,false);
-                showCollage(mEditedPlant.plantPhotos,mMultiPhoto,mPhotocount,this);
+                addMultiPhoto(mPhotoFileName, false);
+                showCollage(mEditedPlant.plantPhotos, mMultiPhoto, mPhotocount, this);
                 break;
             }
         }
@@ -522,8 +552,9 @@ public class PlantEditActivity extends AppCompatActivity implements
                         if (result.getResultCode() == RESULT_OK) {
                             mEditedPlant = result.getData().getParcelableExtra("updated_plant");
 //                            if (!mMainPhotoName.equals(mEditedPlant.plant.getMainPhotoName())){
-                                mMainPhotoName=mEditedPlant.plant.getMainPhotoName();
-                                showMainPhoto();
+                            mMainPhotoName = mEditedPlant.plant.getMainPhotoName();
+                            showMainPhoto();
+                            showCollage(mEditedPlant.plantPhotos, mMultiPhoto, mPhotocount, getApplicationContext());
 //                            }
 
 //                            mInitialPlant = result.getData().getParcelableExtra("updated_plant");
@@ -577,7 +608,6 @@ public class PlantEditActivity extends AppCompatActivity implements
         mCategoryMenu.setFreezesText(false);
 
 
-
     }
 
     private void setListeners() {
@@ -609,8 +639,6 @@ public class PlantEditActivity extends AppCompatActivity implements
     }
 
 
-
-
     private void setVisibility() {
         mBackArrowContainer.setVisibility(View.GONE);
         mCheckContainer.setVisibility(View.VISIBLE);
@@ -622,7 +650,7 @@ public class PlantEditActivity extends AppCompatActivity implements
         Log.d(TAG, "savePlant: gggg");
         //Log.d(TAG, "savePlant: bb1-1 "+mViewModel.getSavedPlant().toString());
         copyViewToEditedPlant();
-        Log.d(TAG, "savePlant: bb2-1 "+mEditedPlant.plantFlowerMonths.toString());
+
         //Log.d(TAG, "savePlant: bb1-2 "+mViewModel.getSavedPlant().toString());
         storeEditedPlantInViewModel();
         //Log.d(TAG, "savePlant: bb1-9 "+mViewModel.getSavedPlant().toString());
@@ -663,18 +691,8 @@ public class PlantEditActivity extends AppCompatActivity implements
     }
 
     private void findPlantId() {
-//        mPlantRepository.getMaxPlantId().observe(this, new Observer<Integer>() {
-        mViewModel.getMaxPlantId().observe(this, new Observer<Integer>() {
-            @Override
-            public void onChanged(Integer plantId) {
-                if (plantId != null) {
-                    mEditedPlant.plant.setPlantId(plantId + 1);
-                    //mPlantId.setText(String.valueOf(mEditedPlant.plant.getPlantId()));
+        mEditedPlant.plant.setPlantId(Utility.getUuid());
 
-                }
-
-            }
-        });
     }
 
 
@@ -697,12 +715,12 @@ public class PlantEditActivity extends AppCompatActivity implements
             public boolean onMenuItemClick(MenuItem menuItem) {
                 // Toast message on menu item clicked
                 Toast.makeText(PlantEditActivity.this, "You Clicked " + menuItem.getTitle(), Toast.LENGTH_SHORT).show();
-                switch (menuItem.getItemId()){
-                    case R.id.kamera:{
+                switch (menuItem.getItemId()) {
+                    case R.id.kamera: {
                         takePhoto();
                         break;
                     }
-                    case R.id.galleri:{
+                    case R.id.galleri: {
                         selectFromGallery();
                         break;
                     }
@@ -734,9 +752,9 @@ public class PlantEditActivity extends AppCompatActivity implements
 
         photoFile = getPhotoFileUri(mPhotoFileName);
 
-        String fileProviderAuthority=getResources().getString(R.string.file_provider);
+        String fileProviderAuthority = getResources().getString(R.string.file_provider);
 
-                Uri fileProvider = FileProvider.getUriForFile(PlantEditActivity.this, fileProviderAuthority, photoFile);
+        Uri fileProvider = FileProvider.getUriForFile(PlantEditActivity.this, fileProviderAuthority, photoFile);
         intent.putExtra(MediaStore.EXTRA_OUTPUT, fileProvider);
 
         if (intent.resolveActivity(getPackageManager()) != null) {
@@ -788,7 +806,7 @@ public class PlantEditActivity extends AppCompatActivity implements
         return file;
     }
 
-    //todo-tjek om nedenstående 3 blot blot kan fjernes?
+//todo-tjek om nedenstående 3 blot blot kan fjernes?
 //    @Override
 //    public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 //
@@ -808,8 +826,9 @@ public class PlantEditActivity extends AppCompatActivity implements
 
     private void addMultiPhoto(String name, boolean mainPhoto) {
         PlantPhoto plantPhoto = new PlantPhoto();
+        plantPhoto.setPhotoId(Utility.getUuid());
         plantPhoto.setPlantId(mEditedPlant.plant.getPlantId());
-        plantPhoto.setUserId(mEditedPlant.plant.getUserId());
+        plantPhoto.setCreatedBy(mEditedPlant.plant.getCreatedBy());
         plantPhoto.setPhotoName(name);
         plantPhoto.setMainPhoto(mainPhoto);
         mEditedPlant.plantPhotos.add(plantPhoto);
@@ -820,7 +839,7 @@ public class PlantEditActivity extends AppCompatActivity implements
 
     private void startPhotoList() {
         Intent intent = new Intent(this, PhotoListActivity.class);
-        PhotoListActivityIntentExtra photoListActivityIntentExtra=new PhotoListActivityIntentExtra();
+        PhotoListActivityIntentExtra photoListActivityIntentExtra = new PhotoListActivityIntentExtra();
         photoListActivityIntentExtra.setPlantWithLists(mEditedPlant);
         photoListActivityIntentExtra.setEditMode(true);
         intent.putExtra("selected_plant", photoListActivityIntentExtra);
@@ -833,9 +852,6 @@ public class PlantEditActivity extends AppCompatActivity implements
         Log.d(TAG, "onItemClick: i" + i + " " + getResources().getStringArray(R.array.category_array)[i]);
         mEditedPlant.plant.setCategory(i);
     }
-
-
-
 
 
 //    private void addToAlbum(String uploadToken) {

@@ -5,11 +5,11 @@ package com.susarne.ihave2.ui.login;
  */
 class LoggedInUserView {
     private String displayName;
-    private int userId;
+    private String userId;
     private String accessToken;
     //... other data fields that may be accessible to the UI
 
-    LoggedInUserView(String displayName, int userId, String accessToken) {
+    LoggedInUserView(String displayName, String userId, String accessToken) {
 
         this.displayName = displayName;
         this.userId = userId;
@@ -20,7 +20,7 @@ class LoggedInUserView {
         return displayName;
     }
 
-    public int getUserId() {
+    public String getUserId() {
         return userId;
     }
 

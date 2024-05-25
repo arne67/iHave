@@ -16,30 +16,35 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.susarne.ihave2.BuildConfig;
 import com.susarne.ihave2.MainActivity;
 import com.susarne.ihave2.R;
 import com.susarne.ihave2.databinding.ActivityRegisterBinding;
 import com.susarne.ihave2.persistence.PlantRepository;
 import com.susarne.ihave2.util.ContextSingleton;
+import com.susarne.ihave2.util.CurrentUser;
 
 public class RegisterActivity extends AppCompatActivity {
 
     private RegisterViewModel registerViewModel;
     private ActivityRegisterBinding binding;
-    private String mUserName;
     private String mPassword;
     private static SharedPreferences mSharedPreferences;
     private static String mMasterKeyAlias;
 
     // UI - components
-    EditText mUsernameEditText;
     EditText mPasswordEditText;
     EditText mPasswordRepeatedEditText;
     EditText mFullNameEditText;
@@ -47,6 +52,9 @@ public class RegisterActivity extends AppCompatActivity {
     Button mRegisterButton;
     Button mConfirmButton;
     ProgressBar mLoadingProgressBar;
+    
+    
+    private FirebaseAuth mAuth;
 
 
     private static final String TAG = "RegisterActivity";
@@ -59,6 +67,8 @@ public class RegisterActivity extends AppCompatActivity {
         ContextSingleton.getInstance(getApplicationContext());
 
         mPlantRepository = new PlantRepository(this);
+
+        mAuth = FirebaseAuth.getInstance();
 
         initiateUi();
         setListeners();
@@ -80,11 +90,8 @@ public class RegisterActivity extends AppCompatActivity {
                 Log.d(TAG, "onClick: register button");
                 if (isRegisterValid()){
                     mLoadingProgressBar.setVisibility(View.VISIBLE);
-                    Log.d(TAG, "onClick: vi kalder viewmodel register");
-                    registerViewModel.register(mUsernameEditText.getText().toString(),
-                            mPasswordEditText.getText().toString(),
-                            mFullNameEditText.getText().toString(),
-                            mEmailEditText.getText().toString());
+                    createUserInAuthDb();
+
                 }
 
             }
@@ -98,6 +105,38 @@ public class RegisterActivity extends AppCompatActivity {
 
     }
 
+    private void createUserInAuthDb() {
+        mAuth.createUserWithEmailAndPassword(mEmailEditText.getText().toString(),  mPasswordEditText.getText().toString())
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            // Sign in success, update UI with the signed-in user's information
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            Log.d(TAG, "onComplete: createfirebaseuser ok");
+                            sendConfirmEmail(user);
+                            CreateUserInPlantDb(user);
+                        } else {
+                            // If sign in fails, display a message to the user.
+                            Toast.makeText(RegisterActivity.this, "Authentication failed.",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+    }
+
+    private void CreateUserInPlantDb(FirebaseUser user) {
+        Log.d(TAG, "onClick: vi kalder viewmodel register");
+        registerViewModel.register(user.getUid(),
+                mPasswordEditText.getText().toString(),
+                mFullNameEditText.getText().toString(),
+                mEmailEditText.getText().toString());
+    }
+
+    private void sendConfirmEmail(FirebaseUser user) {
+        user.sendEmailVerification();
+    }
+
     private boolean isRegisterValid() {
         return true;
     }
@@ -109,7 +148,6 @@ public class RegisterActivity extends AppCompatActivity {
         registerViewModel = new ViewModelProvider(this, new RegisterViewModelFactory())
                 .get(RegisterViewModel.class);
 
-        mUsernameEditText = binding.username;
         mPasswordEditText = binding.password;
         mPasswordRepeatedEditText = binding.passwordRepeated;
         mFullNameEditText = binding.fullName;
@@ -121,7 +159,6 @@ public class RegisterActivity extends AppCompatActivity {
 
 
     private void setStateRegister() {
-        binding.username.setVisibility(View.VISIBLE);
         binding.password.setVisibility(View.VISIBLE);
         binding.passwordRepeated.setVisibility(View.VISIBLE);
         binding.fullName.setVisibility(View.VISIBLE);
@@ -134,7 +171,6 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void setStateUnconfirmed() {
-        binding.username.setVisibility(View.GONE);
         binding.password.setVisibility(View.GONE);
         binding.passwordRepeated.setVisibility(View.GONE);
         binding.fullName.setVisibility(View.GONE);
@@ -162,9 +198,6 @@ public class RegisterActivity extends AppCompatActivity {
                     return;
                 }
                 mRegisterButton.setEnabled(registerFormState.isDataValid());
-                if (registerFormState.getUsernameError() != null) {
-                    mUsernameEditText.setError(getString(registerFormState.getUsernameError()));
-                }
                 if (registerFormState.getPasswordError() != null) {
                     mPasswordEditText.setError(getString(registerFormState.getPasswordError()));
                 }
@@ -194,9 +227,9 @@ public class RegisterActivity extends AppCompatActivity {
                 if (registerResult.getSuccess() != null) {
 
                     updateUiWithUser(registerResult.getSuccess());
+                    updateCurrentUser(registerResult.getSuccess());
                     setResult(Activity.RESULT_OK);
                     setStateUnconfirmed();
-
                 }
 
                 //Complete and destroy login activity once successful
@@ -218,16 +251,14 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void afterTextChanged(Editable s) {
                 Log.d(TAG, "afterTextChanged: ");
-                mUserName = mUsernameEditText.getText().toString();
                 mPassword = mPasswordEditText.getText().toString();
-                registerViewModel.registerDataChanged(mUsernameEditText.getText().toString(),
+                registerViewModel.registerDataChanged(
                         mPasswordEditText.getText().toString(),
                         mPasswordRepeatedEditText.getText().toString(),
                         mFullNameEditText.getText().toString(),
                         mEmailEditText.getText().toString());
             }
         };
-        mUsernameEditText.addTextChangedListener(afterTextChangedListener);
         mPasswordEditText.addTextChangedListener(afterTextChangedListener);
         mPasswordRepeatedEditText.addTextChangedListener(afterTextChangedListener);
         mFullNameEditText.addTextChangedListener(afterTextChangedListener);
@@ -236,16 +267,15 @@ public class RegisterActivity extends AppCompatActivity {
 
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    registerViewModel.register(mUsernameEditText.getText().toString(),
-                            mPasswordEditText.getText().toString(),
-                            mFullNameEditText.getText().toString(),
-                            mEmailEditText.getText().toString());
-                    }
                 return false;
             }
         });
 
+    }
+
+    private void updateCurrentUser(LoggedInUserView success) {
+        CurrentUser.putUserId(success.getUserId());
+        CurrentUser.putAccessToken(success.getAccessToken());
     }
 
     private void startMainActivity() {

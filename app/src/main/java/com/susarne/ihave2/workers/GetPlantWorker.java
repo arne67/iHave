@@ -10,10 +10,11 @@ import androidx.annotation.NonNull;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.susarne.ihave2.api.PlantApiClient;
 import com.susarne.ihave2.models.GooglePhotos.MediaItem;
 import com.susarne.ihave2.models.Plant;
-import com.susarne.ihave2.models.PlantFlowerMonth;
+
 import com.susarne.ihave2.models.PlantPhoto;
 import com.susarne.ihave2.models.PlantWithLists;
 import com.susarne.ihave2.models.PlantWithListsDto;
@@ -39,6 +40,7 @@ public class GetPlantWorker extends Worker {
     private String mAccessTokenString;
     private Context mContext;
     private File mMediaStorageDir, mImageFile;
+    private FirebaseAuth mAuth;
 
     public GetPlantWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -48,20 +50,26 @@ public class GetPlantWorker extends Worker {
     @NonNull
     @Override
     public Result doWork() {
+        Log.d(TAG, "doWork: getplantworker1");
+        mAuth = FirebaseAuth.getInstance();
+
         int workerPlantId = getInputData().getInt(WORKER_PLANT_ID, 0);
         mContext = ContextSingleton.getContekst();
         mAccessTokenString = Token.getAccessToken(ACCESS_TOKEN_PHOTO);
 
         if (getFirstPlant() == null) {
             GooglePhoto.createPhotoDir(getApplicationContext());
-            PlantsWithListsDto plantsWithListsDto = getPlantsForUserId(CurrentUser.getUserId());
+            PlantsWithListsDto plantsWithListsDto = getPlantsForUserId(mAuth.getCurrentUser().getUid());
+            Log.d(TAG, "doWork: blomstrer i md 11"+plantsWithListsDto.plants.get(1).isBloomsMonth11());
             Log.d(TAG, "doWork: plantsWithListsDto: " + plantsWithListsDto + "/" + plantsWithListsDto.toString());
             for (PlantWithListsDto plantWithListsDto : plantsWithListsDto.plants) {
-                for (PlantPhoto plantphoto : plantWithListsDto.getPlantPhotos()) {
-                    Log.d(TAG, "doWork: " + plantphoto.getUploadedPhotoReference());
-                    MediaItem mediaItem = GooglePhoto.getMediaItem(plantphoto.getUploadedPhotoReference());
-                    if (mediaItem != null) {
-                        GooglePhoto.downloadImage(mediaItem.getBaseUrl(), plantphoto.getPhotoName(), getApplicationContext());
+                if (plantWithListsDto.getPlantPhotos()!=null){
+                    for (PlantPhoto plantphoto : plantWithListsDto.getPlantPhotos()) {
+                        Log.d(TAG, "doWork: " + plantphoto.getUploadedPhotoReference());
+                        MediaItem mediaItem = GooglePhoto.getMediaItem(plantphoto.getUploadedPhotoReference());
+                        if (mediaItem != null) {
+                            GooglePhoto.downloadImage(mediaItem.getBaseUrl(), plantphoto.getPhotoName(), getApplicationContext());
+                        }
                     }
                 }
                 insertPlant(plantWithListsDto);
@@ -74,41 +82,26 @@ public class GetPlantWorker extends Worker {
     }
 
     private void insertPlant(PlantWithListsDto plantWithListsDto) {
-        Plant plant = new Plant();
-
-        plant.setPlantId(plantWithListsDto.getPlantId());
-        plant.setUserId(plantWithListsDto.getUserId());
-        plant.setContent(plantWithListsDto.getContent());
-        plant.setCreatedTime(plantWithListsDto.getCreatedTime());
-        plant.setTitle(plantWithListsDto.getTitle());
-        plant.setCategory(plantWithListsDto.getCategory());
-        plant.setDeleted(plantWithListsDto.isDeleted());
-        plant.setMainPhotoName(plantWithListsDto.getMainPhotoName());
+        Plant plant = new Plant(plantWithListsDto);
         plant.setCreatedInCloud(true);
         plant.setSyncedWithCloud(true);
         mPlantRepository.insertPlant(plant);
 
-        for (PlantPhoto p : plantWithListsDto.getPlantPhotos()) {
-            PlantPhoto plantPhoto = new PlantPhoto(p);
-            plantPhoto.setCreatedInCloud(true);
-            plantPhoto.setSyncedWithCloud(true);
-            mPlantRepository.insertPlantPhoto(plantPhoto);
+        if (plantWithListsDto.getPlantPhotos()!=null){
+            for (PlantPhoto p : plantWithListsDto.getPlantPhotos()) {
+                PlantPhoto plantPhoto = new PlantPhoto(p);
+                plantPhoto.setCreatedInCloud(true);
+                plantPhoto.setSyncedWithCloud(true);
+                mPlantRepository.insertPlantPhoto(plantPhoto);
+            }
         }
-
-        for (PlantFlowerMonth p : plantWithListsDto.getPlantFlowerMonths()) {
-            PlantFlowerMonth plantFlowerMonth = new PlantFlowerMonth(p);
-            plantFlowerMonth.setCreatedInCloud(true);
-            plantFlowerMonth.setSyncedWithCloud(true);
-            mPlantRepository.insertPlantFlowerMonth(plantFlowerMonth);
-        }
-
 
     }
 
 
-    private PlantsWithListsDto getPlantsForUserId(int userId) {
+    private PlantsWithListsDto getPlantsForUserId(String userId) {
         //her skal vi kalde retrofit for at uploade synkront
-        Call<PlantsWithListsDto> call = PlantApiClient.getInstance().getMyApi().getPlantsForUserId(userId);
+        Call<PlantsWithListsDto> call = PlantApiClient.getInstance().getMyApi().getPlantsInUsersCommunities(userId);
         try {
             Response<PlantsWithListsDto> response = call.execute();
             if (response.isSuccessful()) {

@@ -9,7 +9,6 @@ import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
-import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 import java.util.Objects;
@@ -17,20 +16,20 @@ import java.util.Objects;
 @Entity(tableName = "plantPhotos",
         foreignKeys = @ForeignKey(entity=Plant.class, parentColumns={"plantId"}, childColumns={"plantId"},onDelete = CASCADE)
 )
-public class PlantPhoto implements Parcelable {
+public  class PlantPhoto implements Parcelable {
 
 //#nytfelt
 
-    @PrimaryKey(autoGenerate = true)
+    @NonNull
+    @PrimaryKey
     // unik id for photo på tværs af users
-    private int photoId; //unik id for foto på tværs af users
-    private int plantId; //unik id for plante på tværs af users
-    private int userId; //unik id for users
+    private String photoId; //unik id for foto på tværs af users
+    private String plantId; //unik id for plante på tværs af users
+    private String createdBy; //unik id for users
     @ColumnInfo(name = "photoName")
     @NonNull
     private String photoName; //filnavn på foto på enheden
     private String uploadedPhotoReference; //Id på googles MediaItem
-    private String imageUrl; //tænkt til  baseUrl fra googles MediaItem, men feltet er droppet da baseUrl expires
     private boolean photoUploaded; //er selve fotoet uploaded til google photo
     private boolean mainPhoto; //er dette det primære foto til plantne
     private boolean deleted; //er det slet-markeret
@@ -38,13 +37,12 @@ public class PlantPhoto implements Parcelable {
     private boolean syncedWithCloud; //er det i sync med cloud-db'en
 
 
-    public PlantPhoto(int photoId, int plantId, int userId, @NonNull String photoName, String uploadedPhotoReference, String imageUrl, boolean photoUploaded, boolean mainPhoto, boolean deleted, boolean createdInCloud, boolean syncedWithCloud) {
+    public PlantPhoto(String photoId, String plantId, String createdBy, @NonNull String photoName, String uploadedPhotoReference, String imageUrl, boolean photoUploaded, boolean mainPhoto, boolean deleted, boolean createdInCloud, boolean syncedWithCloud) {
         this.photoId = photoId;
         this.plantId = plantId;
-        this.userId = userId;
+        this.createdBy = createdBy;
         this.photoName = photoName;
         this.uploadedPhotoReference = uploadedPhotoReference;
-        this.imageUrl = imageUrl;
         this.photoUploaded = photoUploaded;
         this.mainPhoto = mainPhoto;
         this.deleted = deleted;
@@ -52,7 +50,7 @@ public class PlantPhoto implements Parcelable {
         this.syncedWithCloud = syncedWithCloud;
     }
 
-    @Ignore
+
     public PlantPhoto() {
     }
 
@@ -60,10 +58,9 @@ public class PlantPhoto implements Parcelable {
     public PlantPhoto(PlantPhoto other) {
         this.photoId = other.photoId;
         this.plantId = other.plantId;
-        this.userId = other.userId;
+        this.createdBy = other.createdBy;
         this.photoName = other.photoName;
         this.uploadedPhotoReference = other.uploadedPhotoReference;
-        this.imageUrl = other.imageUrl;
         this.photoUploaded = other.photoUploaded;
         this.mainPhoto = other.mainPhoto;
         this.deleted = other.deleted;
@@ -71,13 +68,26 @@ public class PlantPhoto implements Parcelable {
         this.syncedWithCloud = other.syncedWithCloud;
     }
 
+    public PlantPhoto(PlantPhotoDto other) {
+        //this.photoUploaded = other.photoUploaded;
+        //this.createdInCloud = other.createdInCloud;
+        //this.syncedWithCloud = other.syncedWithCloud;
+        this.photoId = other.getPhotoId();
+        this.plantId = other.getPlantId();
+        this.createdBy = other.getCreatedBy();
+        this.photoName = other.getPhotoName();
+        this.uploadedPhotoReference = other.getUploadedPhotoReference();
+        this.mainPhoto = other.isMainPhoto();
+        this.deleted = other.isDeleted();
+    }
+
+
     protected PlantPhoto(Parcel in) {
-        photoId = in.readInt();
-        plantId = in.readInt();
-        userId = in.readInt();
+        photoId = in.readString();
+        plantId = in.readString();
+        createdBy = in.readString();
         photoName = in.readString();
         uploadedPhotoReference = in.readString();
-        imageUrl=in.readString();
         photoUploaded= in.readBoolean();
         mainPhoto= in.readBoolean();
         deleted= in.readBoolean();
@@ -87,12 +97,11 @@ public class PlantPhoto implements Parcelable {
     }
     @Override
     public void writeToParcel(Parcel parcel, int i) {
-        parcel.writeInt(photoId);
-        parcel.writeInt(plantId);
-        parcel.writeInt(userId);
+        parcel.writeString(photoId);
+        parcel.writeString(plantId);
+        parcel.writeString(createdBy);
         parcel.writeString(photoName);
         parcel.writeString(uploadedPhotoReference);
-        parcel.writeString(imageUrl);
         parcel.writeBoolean(photoUploaded);
         parcel.writeBoolean(mainPhoto);
         parcel.writeBoolean(deleted);
@@ -112,26 +121,26 @@ public class PlantPhoto implements Parcelable {
         }
     };
 
-    public int getPlantId() {
+    public String getPlantId() {
         return plantId;
     }
 
-    public void setPlantId(int plantId) {
+    public void setPlantId(String plantId) {
         this.plantId = plantId;
     }
-    public int getUserId() {
-        return userId;
+    public String getCreatedBy() {
+        return createdBy;
     }
 
-    public void setUserId(int userId) {
-        this.userId = userId;
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
     }
 
-    public int getPhotoId() {
+    public String getPhotoId() {
         return photoId;
     }
 
-    public void setPhotoId(int photoId) {
+    public void setPhotoId(String photoId) {
         this.photoId = photoId;
     }
 
@@ -141,14 +150,6 @@ public class PlantPhoto implements Parcelable {
 
     public void setPhotoName(String photoName) {
         this.photoName = photoName;
-    }
-
-    public String getImageUrl() {
-        return imageUrl;
-    }
-
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
     }
 
     public String getUploadedPhotoReference() {
@@ -210,10 +211,9 @@ public class PlantPhoto implements Parcelable {
         return "PlantPhoto{" +
                 "photoId=" + photoId +
                 ", plantId=" + plantId +
-                ", userId=" + userId +
+                ", userId=" + createdBy +
                 ", photoName='" + photoName + '\'' +
                 ", uploadedPhotoReference='" + uploadedPhotoReference + '\'' +
-                ", imageUrl='" + imageUrl + '\'' +
                 ", photoUploaded=" + photoUploaded +
                 ", mainPhoto=" + mainPhoto +
                 ", deleted=" + deleted +
@@ -228,11 +228,11 @@ public class PlantPhoto implements Parcelable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PlantPhoto that = (PlantPhoto) o;
-        return photoId == that.photoId && plantId == that.plantId && userId == that.userId && photoUploaded == that.photoUploaded && mainPhoto == that.mainPhoto && deleted == that.deleted && createdInCloud == that.createdInCloud && syncedWithCloud == that.syncedWithCloud && photoName.equals(that.photoName) && Objects.equals(uploadedPhotoReference, that.uploadedPhotoReference) && Objects.equals(imageUrl, that.imageUrl);
+        return photoId == that.photoId && plantId == that.plantId && createdBy == that.createdBy && photoUploaded == that.photoUploaded && mainPhoto == that.mainPhoto && deleted == that.deleted && createdInCloud == that.createdInCloud && syncedWithCloud == that.syncedWithCloud && photoName.equals(that.photoName) && Objects.equals(uploadedPhotoReference, that.uploadedPhotoReference);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(photoId, plantId, userId, photoName, uploadedPhotoReference, imageUrl, photoUploaded, mainPhoto, deleted, createdInCloud, syncedWithCloud);
+        return Objects.hash(photoId, plantId, createdBy, photoName, uploadedPhotoReference, photoUploaded, mainPhoto, deleted, createdInCloud, syncedWithCloud);
     }
 }

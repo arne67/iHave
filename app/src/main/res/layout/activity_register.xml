@@ -45,20 +45,22 @@
         android:layout_gravity="start"
         android:enabled="false"
         android:text="@string/action_confirm"
-        app:layout_constraintBottom_toTopOf="@id/username"
+        app:layout_constraintTop_toBottomOf="@+id/unconfirmed_text"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/unconfirmed_text"
+        app:layout_constraintBottom_toTopOf="@id/email"
         app:layout_constraintVertical_bias="0.2" />
 
     <EditText
-        android:id="@+id/username"
+        android:id="@+id/email"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="0dp"
-        android:autofillHints="@string/prompt_username"
-        android:hint="@string/prompt_username"
-        android:inputType="textEmailAddress"
+        android:autofillHints="@string/prompt_email"
+        android:hint="@string/prompt_email"
+        android:imeActionLabel="@string/action_sign_in_short"
+        android:imeOptions="actionDone"
+        android:inputType="text"
         android:selectAllOnFocus="true"
         app:layout_constraintTop_toBottomOf="@+id/confirm"
         app:layout_constraintEnd_toEndOf="parent"
@@ -78,7 +80,7 @@
         android:imeOptions="actionDone"
         android:inputType="textPassword"
         android:selectAllOnFocus="true"
-        app:layout_constraintTop_toBottomOf="@+id/username"
+        app:layout_constraintTop_toBottomOf="@+id/email"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toTopOf="@id/password_repeated"
@@ -117,26 +119,11 @@
         app:layout_constraintTop_toBottomOf="@+id/password_repeated"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/email"
+        app:layout_constraintBottom_toTopOf="@id/register"
         app:layout_constraintVertical_bias="0.2"
     />
 
-    <EditText
-        android:id="@+id/email"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="0dp"
-        android:autofillHints="@string/prompt_email"
-        android:hint="@string/prompt_email"
-        android:imeActionLabel="@string/action_sign_in_short"
-        android:imeOptions="actionDone"
-        android:inputType="text"
-        android:selectAllOnFocus="true"
-        app:layout_constraintTop_toBottomOf="@+id/full_name"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/register"
-        app:layout_constraintVertical_bias="0.2" />
+
 
 
     <Button
@@ -147,7 +134,7 @@
         android:layout_marginBottom="0dp"
         android:enabled="false"
         android:text="@string/action_register"
-        app:layout_constraintTop_toBottomOf="@+id/email"
+        app:layout_constraintTop_toBottomOf="@+id/full_name"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toTopOf="@id/loading"

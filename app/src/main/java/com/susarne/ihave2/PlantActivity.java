@@ -33,6 +33,7 @@ import com.susarne.ihave2.persistence.PlantRepository;
 import com.google.android.material.textfield.TextInputLayout;
 
 import java.io.File;
+import java.util.Collections;
 
 public class PlantActivity extends AppCompatActivity implements
         View.OnClickListener {
@@ -233,6 +234,7 @@ public class PlantActivity extends AppCompatActivity implements
         mPlantTitle.getEditText().setText(mInitialPlant.plant.getTitle());
         mPlantText.getEditText().setText(mInitialPlant.plant.getContent());
         mMainPhotoName = mInitialPlant.plant.getMainPhotoName();
+        Collections.sort(mInitialPlant.plantPhotos, (c1, c2) -> c1.getPhotoName().compareTo(c2.getPhotoName()));
         showCollage(mInitialPlant.plantPhotos, mMultiPhoto, mPhotocount, this);
 
         speed(TAG, 102);
@@ -240,15 +242,30 @@ public class PlantActivity extends AppCompatActivity implements
         speed(TAG, 103);
 
 
-        for (int i = 0; i < mInitialPlant.plantFlowerMonths.size(); i++) {
-            int monthNo = mInitialPlant.plantFlowerMonths.get(i).getMonthNo();
-            if (!mInitialPlant.plantFlowerMonths.get(i).isDeleted()) {
-                Log.d(TAG, "copyEditedPlantToView: bb2-1 " + i + " " + monthNo);
-                mCheckBoxFlower[monthNo - 1].setChecked(true);
-            } else {
-                mCheckBoxFlower[monthNo - 1].setChecked(false);
-            }
-        }
+        if (mInitialPlant.plant.isBloomsMonth1()) mCheckBoxFlower[0].setChecked(true);
+        else mCheckBoxFlower[0].setChecked(false);
+        if (mInitialPlant.plant.isBloomsMonth2()) mCheckBoxFlower[1].setChecked(true);
+        else mCheckBoxFlower[1].setChecked(false);
+        if (mInitialPlant.plant.isBloomsMonth3()) mCheckBoxFlower[2].setChecked(true);
+        else mCheckBoxFlower[2].setChecked(false);
+        if (mInitialPlant.plant.isBloomsMonth4()) mCheckBoxFlower[3].setChecked(true);
+        else mCheckBoxFlower[3].setChecked(false);
+        if (mInitialPlant.plant.isBloomsMonth5()) mCheckBoxFlower[4].setChecked(true);
+        else mCheckBoxFlower[4].setChecked(false);
+        if (mInitialPlant.plant.isBloomsMonth6()) mCheckBoxFlower[5].setChecked(true);
+        else mCheckBoxFlower[5].setChecked(false);
+        if (mInitialPlant.plant.isBloomsMonth7()) mCheckBoxFlower[6].setChecked(true);
+        else mCheckBoxFlower[6].setChecked(false);
+        if (mInitialPlant.plant.isBloomsMonth8()) mCheckBoxFlower[7].setChecked(true);
+        else mCheckBoxFlower[7].setChecked(false);
+        if (mInitialPlant.plant.isBloomsMonth9()) mCheckBoxFlower[8].setChecked(true);
+        else mCheckBoxFlower[8].setChecked(false);
+        if (mInitialPlant.plant.isBloomsMonth10()) mCheckBoxFlower[9].setChecked(true);
+        else mCheckBoxFlower[9].setChecked(false);
+        if (mInitialPlant.plant.isBloomsMonth11()) mCheckBoxFlower[10].setChecked(true);
+        else mCheckBoxFlower[10].setChecked(false);
+        if (mInitialPlant.plant.isBloomsMonth12()) mCheckBoxFlower[11].setChecked(true);
+        else mCheckBoxFlower[11].setChecked(false);
         speed(TAG, 104);
 
         //showCollage();

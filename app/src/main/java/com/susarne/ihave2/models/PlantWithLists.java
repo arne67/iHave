@@ -13,11 +13,7 @@ import java.util.Objects;
 public class PlantWithLists implements Parcelable{
     @Embedded
     public Plant plant;
-    @Relation(
-            parentColumn = "plantId",
-            entityColumn = "plantId"
-    )
-    public List<PlantFlowerMonth> plantFlowerMonths;
+
     @Relation(
             parentColumn = "plantId",
             entityColumn = "plantId"
@@ -26,30 +22,23 @@ public class PlantWithLists implements Parcelable{
 
     protected PlantWithLists(Parcel in) {
         plant = in.readParcelable(Plant.class.getClassLoader());
-        plantFlowerMonths = in.createTypedArrayList(PlantFlowerMonth.CREATOR);
         plantPhotos = in.createTypedArrayList(PlantPhoto.CREATOR);
     }
     public PlantWithLists(PlantWithLists plantWithLists){
         this.plant=new Plant(plantWithLists.plant);
-        this.plantFlowerMonths=new ArrayList<PlantFlowerMonth>();
-
-        for (PlantFlowerMonth p:plantWithLists.plantFlowerMonths) {
-            PlantFlowerMonth plantFlowerMonth = new PlantFlowerMonth();
-            plantFlowerMonth.setPlantFlowerMonthId(p.getPlantFlowerMonthId());
-            plantFlowerMonth.setPlantId(p.getPlantId());
-            plantFlowerMonth.setMonthNo(p.getMonthNo());
-            plantFlowerMonth.setUserId(p.getUserId());
-            plantFlowerMonth.setDeleted(p.isDeleted());
-            plantFlowerMonth.setCreatedInCloud(p.isCreatedInCloud());
-            plantFlowerMonth.setSyncedWithCloud(p.isSyncedWithCloud());
-            plantFlowerMonth.setUploaded(p.isUploaded());
-            this.plantFlowerMonths.add(plantFlowerMonth);
-        }
-
         this.plantPhotos=new ArrayList<>(plantWithLists.plantPhotos);
     }
     public PlantWithLists(){
     }
+
+    public PlantWithLists(EntirePlantDto other){
+        this.plant = new Plant(other.getPlantDto());
+        for (PlantPhotoDto p: other.getPlantPhotosDto()) {
+            PlantPhoto plantPhoto = new PlantPhoto(p);
+            this.plantPhotos.add(plantPhoto);
+        }
+    }
+
 
 
     public static final Creator<PlantWithLists> CREATOR = new Creator<PlantWithLists>() {
@@ -72,7 +61,6 @@ public class PlantWithLists implements Parcelable{
     @Override
     public void writeToParcel(Parcel parcel, int i) {
         parcel.writeParcelable(plant, i);
-        parcel.writeTypedList(plantFlowerMonths);
         parcel.writeTypedList(plantPhotos);
     }
 
@@ -81,19 +69,18 @@ public class PlantWithLists implements Parcelable{
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PlantWithLists that = (PlantWithLists) o;
-        return Objects.equals(plant, that.plant) && Objects.equals(plantFlowerMonths, that.plantFlowerMonths) && Objects.equals(plantPhotos, that.plantPhotos);
+        return Objects.equals(plant, that.plant) && Objects.equals(plantPhotos, that.plantPhotos);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(plant, plantFlowerMonths, plantPhotos);
+        return Objects.hash(plant, plantPhotos);
     }
 
     @Override
     public String toString() {
         return "PlantWithLists{" +
                 "plant=" + plant +
-                ", plantFlowerMonths=" + plantFlowerMonths +
                 ", plantPhotos=" + plantPhotos +
                 '}';
     }

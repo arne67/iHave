@@ -10,6 +10,7 @@ import androidx.work.WorkerParameters;
 
 import static com.susarne.ihave2.util.Constants.*;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.susarne.ihave2.api.GooglePhotoApiClient;
 import com.susarne.ihave2.api.GooglePhotoApiScalarsClient;
 import com.susarne.ihave2.api.PlantApiClient;
@@ -25,8 +26,6 @@ import com.susarne.ihave2.models.GooglePhotos.SimpleMediaItem;
 import com.susarne.ihave2.models.PhotoAlbumIdDto;
 import com.susarne.ihave2.models.Plant;
 import com.susarne.ihave2.models.PlantDto;
-import com.susarne.ihave2.models.PlantFlowerMonth;
-import com.susarne.ihave2.models.PlantFlowerMonthDto;
 import com.susarne.ihave2.models.PlantPhoto;
 import com.susarne.ihave2.models.PlantPhotoDto;
 import com.susarne.ihave2.models.PlantWithLists;
@@ -58,6 +57,8 @@ public class SavePlantWorker extends Worker {
     private Context mContext;
     private File mMediaStorageDir, mImageFile;
 
+    private FirebaseAuth mAuth;
+
     public SavePlantWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
         mPlantRepository = new PlantRepository(context);
@@ -66,6 +67,8 @@ public class SavePlantWorker extends Worker {
     @NonNull
     @Override
     public Result doWork() {
+        mAuth = FirebaseAuth.getInstance();
+
         int workerPlantId = getInputData().getInt(WORKER_PLANT_ID, 0);
         sleep();
         mContext = ContextSingleton.getContekst();
@@ -105,20 +108,7 @@ public class SavePlantWorker extends Worker {
                     }
 
                 }
-                for (PlantFlowerMonth p : plantWithLists.plantFlowerMonths) {
-                    if (!p.isCreatedInCloud()) {
-                        uploadNewPlantFlowerMonth(p);
-                        if (mSucces)
-                            markPlantPlantFlowerMonthsAsUploaded(p);
-                    } else {
-                        if (!p.isSyncedWithCloud()) {
-                            uploadChangedPlantFlowerMonth(p);
-                            if (mSucces)
-                                markPlantPlantFlowerMonthsAsUploaded(p);
-                        }
-                    }
 
-                }
             }
 
             plantWithLists = getNotUploadedPlant();
@@ -138,16 +128,9 @@ public class SavePlantWorker extends Worker {
         return plantWithLists;
     }
 
-    private int updatePlantFlowerMonth(PlantFlowerMonth plantFlowerMonth) {
-        return mPlantRepository.updatePlantFlowerMonthSync(plantFlowerMonth);
-    }
 
     private int updatePlantPhoto(PlantPhoto plantPhoto) {
         return mPlantRepository.updatePlantPhotoSync(plantPhoto);
-    }
-
-
-    private void uploadPlantFlowerMonth(PlantFlowerMonth p) {
     }
 
 
@@ -156,7 +139,9 @@ public class SavePlantWorker extends Worker {
         mSucces = false;
         Log.d(TAG, "uploadNewPlant: #a" + plant.plant.getPlantId());
         PlantWithListsDto plantWithListsDto = getPlantWithlistsDto(plant);
+        plantWithListsDto.setPlantPhotos(null);
         String token = CurrentUser.getAccessToken();
+        token="xxx";
         Log.d(TAG, "uploadNewPlant: a# plantwithlistsdto " + plantWithListsDto.toString());
         Call<PlantWithListsDto> call = PlantApiClient.getInstance().getMyApi().createPlant(token, plantWithListsDto);
         try {
@@ -173,12 +158,15 @@ public class SavePlantWorker extends Worker {
             e.printStackTrace();
             Log.d(TAG, "uploadPlant: io-fejl");
         }
+        for (PlantPhoto p:plant.plantPhotos) {
+            uploadNewPlantPhoto(p);
+        }
     }
 
     private PlantWithListsDto getPlantWithlistsDto(PlantWithLists plant) {
         PlantWithListsDto plantWithListsDto = new PlantWithListsDto();
 
-        plantWithListsDto.setUserId(plant.plant.getUserId());
+        plantWithListsDto.setCreatedBy(plant.plant.getCreatedBy());
         plantWithListsDto.setPlantId(plant.plant.getPlantId());
         plantWithListsDto.setTitle(plant.plant.getTitle());
         plantWithListsDto.setContent(plant.plant.getContent());
@@ -186,8 +174,19 @@ public class SavePlantWorker extends Worker {
         plantWithListsDto.setMainPhotoName(plant.plant.getMainPhotoName());
         plantWithListsDto.setCategory(plant.plant.getCategory());
         plantWithListsDto.setDeleted(plant.plant.isDeleted());
+        plantWithListsDto.setBloomsMonth1(plant.plant.isBloomsMonth1());
+        plantWithListsDto.setBloomsMonth2(plant.plant.isBloomsMonth2());
+        plantWithListsDto.setBloomsMonth3(plant.plant.isBloomsMonth3());
+        plantWithListsDto.setBloomsMonth4(plant.plant.isBloomsMonth4());
+        plantWithListsDto.setBloomsMonth5(plant.plant.isBloomsMonth5());
+        plantWithListsDto.setBloomsMonth6(plant.plant.isBloomsMonth6());
+        plantWithListsDto.setBloomsMonth7(plant.plant.isBloomsMonth7());
+        plantWithListsDto.setBloomsMonth8(plant.plant.isBloomsMonth8());
+        plantWithListsDto.setBloomsMonth9(plant.plant.isBloomsMonth9());
+        plantWithListsDto.setBloomsMonth10(plant.plant.isBloomsMonth10());
+        plantWithListsDto.setBloomsMonth11(plant.plant.isBloomsMonth11());
+        plantWithListsDto.setBloomsMonth12(plant.plant.isBloomsMonth12());
 
-        plantWithListsDto.setPlantFlowerMonths(plant.plantFlowerMonths);
         plantWithListsDto.setPlantPhotos(plant.plantPhotos);
         return plantWithListsDto;
     }
@@ -199,7 +198,7 @@ public class SavePlantWorker extends Worker {
         PlantDto plantDto = getPlantDto(plant);
         String token = "";
         Log.d(TAG, "uploadchangedPlant content: " + plantDto.getContent());
-        Call<PlantDto> call = PlantApiClient.getInstance().getMyApi().updatePlant(token, plantDto, plantDto.getUserId(), plantDto.getPlantId());
+        Call<PlantDto> call = PlantApiClient.getInstance().getMyApi().updatePlant(token, plantDto, plantDto.getCreatedBy(), plantDto.getPlantId());
         try {
             Response<PlantDto> response = call.execute();
             if (response.isSuccessful()) {
@@ -219,7 +218,7 @@ public class SavePlantWorker extends Worker {
     private PlantDto getPlantDto(Plant plant) {
         PlantDto plantDto = new PlantDto();
 
-        plantDto.setUserId(plant.getUserId());
+        plantDto.setCreatedBy(plant.getCreatedBy());
         plantDto.setPlantId(plant.getPlantId());
         plantDto.setTitle(plant.getTitle());
         plantDto.setContent(plant.getContent());
@@ -227,67 +226,22 @@ public class SavePlantWorker extends Worker {
         plantDto.setMainPhotoName(plant.getMainPhotoName());
         plantDto.setCategory(plant.getCategory());
         plantDto.setDeleted(plant.isDeleted());
+        plantDto.setBloomsMonth1(plant.isBloomsMonth1());
+        plantDto.setBloomsMonth2(plant.isBloomsMonth2());
+        plantDto.setBloomsMonth3(plant.isBloomsMonth3());
+        plantDto.setBloomsMonth4(plant.isBloomsMonth4());
+        plantDto.setBloomsMonth5(plant.isBloomsMonth5());
+        plantDto.setBloomsMonth6(plant.isBloomsMonth6());
+        plantDto.setBloomsMonth7(plant.isBloomsMonth7());
+        plantDto.setBloomsMonth8(plant.isBloomsMonth8());
+        plantDto.setBloomsMonth9(plant.isBloomsMonth9());
+        plantDto.setBloomsMonth10(plant.isBloomsMonth10());
+        plantDto.setBloomsMonth11(plant.isBloomsMonth11());
+        plantDto.setBloomsMonth12(plant.isBloomsMonth12());
 
         return plantDto;
     }
 
-    private void uploadNewPlantFlowerMonth(PlantFlowerMonth plantFlowerMonth) {
-        //her skal vi kalde retrofit for at uploade synkront
-        Log.d(TAG, "uploadNewPlantFlowerMonth: ");
-        mSucces = false;
-        PlantFlowerMonthDto plantFlowerMonthDto = getPlantFlowerMonth(plantFlowerMonth);
-
-        String token = "";
-        Call<PlantFlowerMonthDto> call = PlantApiClient.getInstance().getMyApi().createPlantFlowerMonth(token, plantFlowerMonthDto);
-        try {
-            Response<PlantFlowerMonthDto> response = call.execute();
-            if (response.isSuccessful()) {
-                // handle successful response
-                Log.d(TAG, "uploadNewPlantFlowerMonth: " + response.body());
-                mSucces = true;
-            } else {
-                // handle unsuccessful response
-                Log.d(TAG, "uploadPlantFlowerMonth: notfound" + response.errorBody().toString());
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            Log.d(TAG, "uploadPlantFlowerMonth: io-fejl");
-        }
-    }
-
-    private void uploadChangedPlantFlowerMonth(PlantFlowerMonth plantFlowerMonth) {
-        //her skal vi kalde retrofit for at uploade synkront
-        Log.d(TAG, "uploadPlantChangedPlantFlowerMonth: ");
-        mSucces = false;
-        PlantFlowerMonthDto plantFlowerMonthDto = getPlantFlowerMonth(plantFlowerMonth);
-        String token = "";
-        Call<PlantFlowerMonthDto> call = PlantApiClient.getInstance().getMyApi().updatePlantFlowerMonth(token, plantFlowerMonthDto, plantFlowerMonth.getUserId(),plantFlowerMonth.getPlantFlowerMonthId());
-        try {
-            Response<PlantFlowerMonthDto> response = call.execute();
-            if (response.isSuccessful()) {
-                // handle successful response
-                Log.d(TAG, "uploadChangedPlantFlowermonth: " + response.body().toString());
-                mSucces = true;
-
-            } else {
-                // handle unsuccessful response
-                Log.d(TAG, "uploadChangedPlantFlowerMonth: notfound" + response.errorBody().toString());
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            Log.d(TAG, "uploadChangedPlantFlowerMonth: io-fejl");
-        }
-    }
-    private PlantFlowerMonthDto getPlantFlowerMonth(PlantFlowerMonth plantFlowerMonth) {
-        PlantFlowerMonthDto plantFlowerMonthDto = new PlantFlowerMonthDto();
-
-        plantFlowerMonthDto.setPlantFlowerMonthId(plantFlowerMonth.getPlantFlowerMonthId());
-        plantFlowerMonthDto.setUserId(plantFlowerMonth.getUserId());
-        plantFlowerMonthDto.setPlantId(plantFlowerMonth.getPlantId());
-        plantFlowerMonthDto.setDeleted(plantFlowerMonth.isDeleted());
-        plantFlowerMonthDto.setMonthNo(plantFlowerMonth.getMonthNo());
-        return plantFlowerMonthDto;
-    }
 
 
     private void uploadNewPlantPhoto(PlantPhoto plantPhoto) {
@@ -322,7 +276,7 @@ public class SavePlantWorker extends Worker {
         mSucces = false;
         PlantPhotoDto plantPhotoDto = getPlantPhotoDto(plantPhoto);
         String token = "";
-        Call<PlantPhotoDto> call = PlantApiClient.getInstance().getMyApi().updatePlantPhoto(token, plantPhotoDto,plantPhotoDto.getUserId(),plantPhotoDto.getPhotoId());
+        Call<PlantPhotoDto> call = PlantApiClient.getInstance().getMyApi().updatePlantPhoto(token, plantPhotoDto,plantPhotoDto.getCreatedBy(),plantPhotoDto.getPhotoId());
         try {
             Response<PlantPhotoDto> response = call.execute();
             if (response.isSuccessful()) {
@@ -346,7 +300,7 @@ public class SavePlantWorker extends Worker {
         PlantPhotoDto plantPhotoDto = new PlantPhotoDto();
 
         plantPhotoDto.setPhotoId(plantPhoto.getPhotoId());
-        plantPhotoDto.setUserId(plantPhoto.getUserId());
+        plantPhotoDto.setCreatedBy(plantPhoto.getCreatedBy());
         plantPhotoDto.setPlantId(plantPhoto.getPlantId());
         plantPhotoDto.setMainPhoto(plantPhoto.isMainPhoto());
         plantPhotoDto.setPhotoName(plantPhoto.getPhotoName());
@@ -377,11 +331,6 @@ public class SavePlantWorker extends Worker {
         updatePlantPhoto(plantPhoto);
     }
 
-    private void markPlantPlantFlowerMonthsAsUploaded(PlantFlowerMonth plantFlowerMonth) {
-        plantFlowerMonth.setCreatedInCloud(true);
-        plantFlowerMonth.setSyncedWithCloud(true);
-        updatePlantFlowerMonth(plantFlowerMonth);
-    }
 
     private void uploadPhotos(List<PlantPhoto> plantPhotos) {
         Log.d(TAG, "uploadPhotos: #a");
@@ -403,7 +352,6 @@ public class SavePlantWorker extends Worker {
 
     private void markPhotoAsUploaded(MediaItem mediaItem, PlantPhoto plantPhoto) {
         plantPhoto.setUploadedPhotoReference(mediaItem.getId());
-        plantPhoto.setImageUrl(mediaItem.getBaseUrl());
         plantPhoto.setPhotoUploaded(true);
         updatePlantPhoto(plantPhoto);
     }
@@ -429,7 +377,7 @@ public class SavePlantWorker extends Worker {
 
     }
 
-    private PlantWithLists getPlant(int id) {
+    private PlantWithLists getPlant(String id) {
         PlantWithLists plantWithLists = mPlantRepository.retrievePlantByIdSync(id);
         Log.d(TAG, "getPlant: title:" + plantWithLists.plant.getTitle());
         return plantWithLists;
@@ -542,7 +490,7 @@ public class SavePlantWorker extends Worker {
         Log.d(TAG, "uploadPlantPhoto: ");
         mSucces = false;
         String token = "";
-        Call<GetUserRespondDto> call = PlantApiClient.getInstance().getMyApi().getUser(CurrentUser.getUserId());
+        Call<GetUserRespondDto> call = PlantApiClient.getInstance().getMyApi().getUser(mAuth.getCurrentUser().getUid());
         try {
             Response<GetUserRespondDto> response = call.execute();
             if (response.isSuccessful()) {
@@ -607,7 +555,7 @@ public class SavePlantWorker extends Worker {
         photoAlbumIdDto.setPhotoAlbumId(photoAlbumId);
 
         String token = "";
-        Call<Void> call = PlantApiClient.getInstance().getMyApi().updatePhotoAlbumId(token, CurrentUser.getUserId(),photoAlbumIdDto);
+        Call<Void> call = PlantApiClient.getInstance().getMyApi().updatePhotoAlbumId(token, mAuth.getCurrentUser().getUid(),photoAlbumIdDto);
         try {
             Response<Void> response = call.execute();
             if (response.isSuccessful()) {

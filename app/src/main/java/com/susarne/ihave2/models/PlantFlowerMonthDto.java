@@ -5,7 +5,7 @@ public class PlantFlowerMonthDto {
 //#nytfelt
 
     private int plantFlowerMonthId; //entydig ID på markeringen
-    private int plantId; //
+    private String plantId; //
     private int userId;
     private int monthNo;
     private boolean deleted;
@@ -18,11 +18,11 @@ public class PlantFlowerMonthDto {
         this.plantFlowerMonthId = plantFlowerMonthId;
     }
 
-    public int getPlantId() {
+    public String  getPlantId() {
         return plantId;
     }
 
-    public void setPlantId(int plantId) {
+    public void setPlantId(String plantId) {
         this.plantId = plantId;
     }
 

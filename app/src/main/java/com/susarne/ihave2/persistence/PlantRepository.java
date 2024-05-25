@@ -7,7 +7,6 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 
 import com.susarne.ihave2.models.Plant;
-import com.susarne.ihave2.models.PlantFlowerMonth;
 import com.susarne.ihave2.models.PlantPhoto;
 import com.susarne.ihave2.models.PlantWithLists;
 import com.susarne.ihave2.models.System;
@@ -41,13 +40,18 @@ public class PlantRepository {
         mPlantDatabase.getPlantDao().insertSystem(system);
     }
 
+    public void updateSystem(System system) {
+        mPlantDatabase.getPlantDao().updateSystem(system);
+    }
 
-    public LiveData<PlantWithLists> retrievePlantById(int id){
+
+
+    public LiveData<PlantWithLists> retrievePlantById(String id){
         Log.d(TAG, "retrievePlantById: ");
         return mPlantDatabase.getPlantDao().getPlant(id);
     }
 
-    public PlantWithLists retrievePlantByIdSync(int id){
+    public PlantWithLists retrievePlantByIdSync(String id){
         Log.d(TAG, "retrievePlantById: ");
         return mPlantDatabase.getPlantDao().getPlantSync(id);
     }
@@ -61,7 +65,7 @@ public class PlantRepository {
     public PlantWithLists getFirstPlant() {
         return mPlantDatabase.getPlantDao().getFirstPlant();
     }
-    public int markPlantAsUploaded(int plantId) {
+    public int markPlantAsUploaded(String plantId) {
         Log.d(TAG, "markPlantAsUploaded: "+plantId);
         return mPlantDatabase.getPlantDao().markPlantAsUploaded(plantId);
     }
@@ -79,9 +83,7 @@ public class PlantRepository {
         Log.d(TAG, "retrievePlantsTask: ");
         return mPlantDatabase.getPlantDao().getPlantsWithTitle(s);
     }
-    public LiveData<Integer> getMaxPlantId(){
-        return mPlantDatabase.getPlantDao().getMaxPlantId();
-    }
+
 
 
 
@@ -102,8 +104,8 @@ public class PlantRepository {
 
                     @Override
                     public void onError(@NonNull Throwable e) {
-                        Log.d(TAG, "onError: plant ");
-
+                        Log.d(TAG, "onError: insertplantwithlist ");
+                        e.printStackTrace();
                     }
                 });
 
@@ -111,6 +113,7 @@ public class PlantRepository {
 
     public void insertPlant(Plant plant){
         Log.d(TAG, "insertPlant: ");
+        Log.d(TAG, "insertPlant: plant.toSstring"+plant.toString());
         Completable.fromAction(() -> mPlantDatabase.getPlantDao().insertPlant(plant))
                 .subscribeOn(Schedulers.io())
                 // report or post the result to main thread.
@@ -125,8 +128,8 @@ public class PlantRepository {
 
                     @Override
                     public void onError(@NonNull Throwable e) {
-                        Log.d(TAG, "onError: plant ");
-
+                        Log.d(TAG, "onError: insertplant ");
+                        e.printStackTrace();
                     }
                 });
 
@@ -148,30 +151,9 @@ public class PlantRepository {
 
                     @Override
                     public void onError(@NonNull Throwable e) {
-                        Log.d(TAG, "onError: plantphoto ");
+                        Log.d(TAG, "onError: insertplantphoto ");
+                        e.printStackTrace();
 
-                    }
-                });
-
-    }
-
-    public void insertPlantFlowerMonth(PlantFlowerMonth plantFlowerMonth){
-        Log.d(TAG, "insertPlantFloweMonth: ");
-        Completable.fromAction(() -> mPlantDatabase.getPlantDao().insertPlantFlowerMonth(plantFlowerMonth))
-                .subscribeOn(Schedulers.io())
-                // report or post the result to main thread.
-                .observeOn(AndroidSchedulers.mainThread())
-                // execute this RxJava
-                .subscribe(new DisposableCompletableObserver() {
-                    @Override
-                    public void onComplete() {
-
-                        Log.d(TAG, "onComplete:plantphoto "+plantFlowerMonth.toString());
-                    }
-
-                    @Override
-                    public void onError(@NonNull Throwable e) {
-                        Log.d(TAG, "onError: plantFlowerMonth ");
 
                     }
                 });
@@ -179,28 +161,7 @@ public class PlantRepository {
     }
 
 
-    public void updatePlantFlowerMonth(PlantFlowerMonth plantFlowerMonth){
-        Log.d(TAG, "insertPlantFloweMonth: ");
-        Completable.fromAction(() -> mPlantDatabase.getPlantDao().updatePlantFlowerMonth(plantFlowerMonth))
-                .subscribeOn(Schedulers.io())
-                // report or post the result to main thread.
-                .observeOn(AndroidSchedulers.mainThread())
-                // execute this RxJava
-                .subscribe(new DisposableCompletableObserver() {
-                    @Override
-                    public void onComplete() {
 
-                        Log.d(TAG, "onComplete:plantphoto "+plantFlowerMonth.toString());
-                    }
-
-                    @Override
-                    public void onError(@NonNull Throwable e) {
-                        Log.d(TAG, "onError: plantFlowerMonth ");
-
-                    }
-                });
-
-    }
 
     public void updatePlantPhoto(PlantPhoto plantPhoto){
         Log.d(TAG, "insertPlantFloweMonth: ");
@@ -218,35 +179,13 @@ public class PlantRepository {
 
                     @Override
                     public void onError(@NonNull Throwable e) {
-                        Log.d(TAG, "onError: plantPhoto ");
-
+                        Log.d(TAG, "onError: updateplantPhoto ");
+                        e.printStackTrace();
                     }
                 });
 
     }
 
-
-    public void updatePlantWithLists(PlantWithLists plantWithLists){
-        Log.d(TAG, "insertPlant: ");
-        Completable.fromAction(() -> mPlantDatabase.getPlantDao().updatePlantWithLists(plantWithLists))
-                .subscribeOn(Schedulers.io())
-                // report or post the result to main thread.
-                .observeOn(AndroidSchedulers.mainThread())
-                // execute this RxJava
-                .subscribe(new DisposableCompletableObserver() {
-                    @Override
-                    public void onComplete() {
-                        Log.d(TAG, "onComplete:plant ");
-                    }
-
-                    @Override
-                    public void onError(@NonNull Throwable e) {
-                        Log.d(TAG, "onError: plant ");
-
-                    }
-                });
-
-    }
 
 
     public void updatePlant(Plant plant){
@@ -264,25 +203,42 @@ public class PlantRepository {
 
                     @Override
                     public void onError(@NonNull Throwable e) {
-                        Log.d(TAG, "onError: plant ");
+                        Log.d(TAG, "onError: updateplant ");
+                        e.printStackTrace();
 
                     }
                 });
 
     }
 
-    public int updatePlantFlowerMonthSync(PlantFlowerMonth plantFlowerMonth) {
-        Log.d(TAG, "updatePlantFlowerMonthSync: #a "+plantFlowerMonth.toString());
-        return mPlantDatabase.getPlantDao().updatePlantFlowerMonth(plantFlowerMonth);
-    }
+
     public int updatePlantPhotoSync(PlantPhoto plantPhoto) {
         Log.d(TAG, "updatePlantPhoto: #a "+plantPhoto.toString());
         return mPlantDatabase.getPlantDao().updatePlantPhoto(plantPhoto);
     }
     public void deleteAllPlants() {
         mPlantDatabase.getPlantDao().deleteAllPlantPhotos();
-        mPlantDatabase.getPlantDao().deleteAllPlantFlowerMonths();
         mPlantDatabase.getPlantDao().deleteAllPlants();
+    }
+
+    public void upsertPlantsWithsLists(List<PlantWithLists> plantsWithLists, System system) {
+        mPlantDatabase.getPlantDao().upsertPlantsWithLists(plantsWithLists,system);
+    }
+
+    public void upsertPlant(Plant plant) {
+        mPlantDatabase.getPlantDao().upsertPlant(plant);
+    }
+
+    public void upsertPlantPhoto(PlantPhoto plantPhoto) {
+        mPlantDatabase.getPlantDao().upsertPlantPhoto(plantPhoto);
+    }
+
+    public void upsertPlantPhotos(List<PlantPhoto> plantPhotos) {
+        mPlantDatabase.getPlantDao().upsertPlantPhotos(plantPhotos);
+    }
+
+    public void setLastGetUpdatedPlantsUntil(String lastGetUpdatedPlantsUntil){
+        mPlantDatabase.getPlantDao().setLastGetUpdatedPlantsUntil(lastGetUpdatedPlantsUntil);
     }
 
 

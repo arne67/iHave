@@ -9,8 +9,10 @@ public class System {
 
     private int systemId;
 
-    private int userId;
+    private String userId;
     private int lastUsedId;
+    //Tidspunkt (fra cloud) for hvilket tidspunkt vi fået opdateringer hentet ned for andre brugere (til og med)
+    private String lastGetUpdatedPlantsUntil;
 
 
     public int getSystemId() {
@@ -21,11 +23,11 @@ public class System {
         systemId = systemId;
     }
 
-    public int getUserId() {
+    public String getUserId() {
         return userId;
     }
 
-    public void setUserId(int userId) {
+    public void setUserId(String   userId) {
         this.userId = userId;
     }
 
@@ -37,6 +39,13 @@ public class System {
         this.lastUsedId = lastUsedId;
     }
 
+    public String getLastGetUpdatedPlantsUntil() {
+        return lastGetUpdatedPlantsUntil;
+    }
+
+    public void setLastGetUpdatedPlantsUntil(String lastGetUpdatedPlantsUntil) {
+        this.lastGetUpdatedPlantsUntil = lastGetUpdatedPlantsUntil;
+    }
 
     public System() {
     }

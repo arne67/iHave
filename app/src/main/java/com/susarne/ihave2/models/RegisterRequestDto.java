@@ -1,25 +1,25 @@
 package com.susarne.ihave2.models;
 
 public class RegisterRequestDto {
-    private String userName;
+    private String userId;
     private String password;
     private String name;
     private String emailAddress;
 
 
-    public RegisterRequestDto(String userName, String password, String name, String emailAddress) {
-        this.userName = userName;
+    public RegisterRequestDto(String userId, String password, String name, String emailAddress) {
+        this.userId = userId;
         this.password = password;
         this.name = name;
         this.emailAddress = emailAddress;
     }
 
-    public String getUserName() {
-        return userName;
+    public String getUserId() {
+        return userId;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public String getPassword() {

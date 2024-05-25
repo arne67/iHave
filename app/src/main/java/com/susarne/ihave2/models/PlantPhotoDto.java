@@ -8,9 +8,9 @@ public class PlantPhotoDto {
 
 //#nytfelt
 
-    private int photoId;
-    private int plantId;
-    private int userId;
+    private String photoId;
+    private String plantId;
+    private String createdBy;
     @ColumnInfo(name = "photoName")
     @NonNull
     private String photoName;
@@ -18,28 +18,28 @@ public class PlantPhotoDto {
     private boolean mainPhoto;
     private boolean deleted;
 
-    public int getPhotoId() {
+    public String getPhotoId() {
         return photoId;
     }
 
-    public void setPhotoId(int photoId) {
+    public void setPhotoId(String photoId) {
         this.photoId = photoId;
     }
 
-    public int getPlantId() {
+    public String  getPlantId() {
         return plantId;
     }
 
-    public void setPlantId(int plantId) {
+    public void setPlantId(String plantId) {
         this.plantId = plantId;
     }
 
-    public int getUserId() {
-        return userId;
+    public String getCreatedBy() {
+        return createdBy;
     }
 
-    public void setUserId(int userId) {
-        this.userId = userId;
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
     }
 
     @NonNull
@@ -73,5 +73,18 @@ public class PlantPhotoDto {
 
     public void setDeleted(boolean deleted) {
         this.deleted = deleted;
+    }
+
+    public PlantPhotoDto() {
+    }
+
+    public PlantPhotoDto(PlantPhoto other) {
+        this.photoId = other.getPhotoId();
+        this.plantId = other.getPlantId();
+        this.createdBy = other.getCreatedBy();
+        this.photoName = other.getPhotoName();
+        this.uploadedPhotoReference = other.getUploadedPhotoReference();
+        this.mainPhoto = other.isMainPhoto();
+        this.deleted = other.isDeleted();
     }
 }

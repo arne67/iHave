@@ -34,15 +34,15 @@ public class CurrentUser {
         mSharedPreferences.edit().remove(Constants.IHAVE_ACCESS_TOKEN).apply();
     }
 
-    public static int getUserId(){
+    public static String getUserId(){
         SharedPreferences sharedPreferences;
         mSharedPreferences=initiateSharedPreferences();
-        return mSharedPreferences.getInt(Constants.IHAVE_USER_ID,0);
+        return mSharedPreferences.getString(Constants.IHAVE_USER_ID,"");
     }
 
-    public static void putUserId(int userId){
+    public static void putUserId(String userId){
         mSharedPreferences=initiateSharedPreferences();
-        mSharedPreferences.edit().putInt(Constants.IHAVE_USER_ID, userId).apply();
+        mSharedPreferences.edit().putString(Constants.IHAVE_USER_ID, userId).apply();
     }
 
 
