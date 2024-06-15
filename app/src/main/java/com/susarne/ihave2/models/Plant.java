@@ -9,10 +9,12 @@ import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
+import java.util.Calendar;
 import java.util.Objects;
 
 @Entity(tableName = "plants")
-public class Plant implements Parcelable {
+public class Plant {
+//    public class Plant implements Parcelable {
 
 //#nytfelt
 
@@ -50,9 +52,10 @@ public class Plant implements Parcelable {
     private boolean bloomsMonth10;
     private boolean bloomsMonth11;
     private boolean bloomsMonth12;
+    private String createdAt;
 
 
-    public Plant(@NonNull String plantId, String createdBy, String title, String content, String createdTime, String mainPhotoName, int category, boolean createdInCloud, boolean deleted, boolean syncedWithCloud, boolean bloomsMonth1, boolean bloomsMonth2, boolean bloomsMonth3, boolean bloomsMonth4, boolean bloomsMonth5, boolean bloomsMonth6, boolean bloomsMonth7, boolean bloomsMonth8, boolean bloomsMonth9, boolean bloomsMonth10, boolean bloomsMonth11, boolean bloomsMonth12) {
+    public Plant(@NonNull String plantId, String createdBy, String title, String content, String createdTime, String mainPhotoName, int category, boolean createdInCloud, boolean deleted, boolean syncedWithCloud, boolean bloomsMonth1, boolean bloomsMonth2, boolean bloomsMonth3, boolean bloomsMonth4, boolean bloomsMonth5, boolean bloomsMonth6, boolean bloomsMonth7, boolean bloomsMonth8, boolean bloomsMonth9, boolean bloomsMonth10, boolean bloomsMonth11, boolean bloomsMonth12, String createdAt) {
         this.plantId = plantId;
         this.createdBy = createdBy;
         this.title = title;
@@ -75,6 +78,7 @@ public class Plant implements Parcelable {
         this.bloomsMonth10 = bloomsMonth10;
         this.bloomsMonth11 = bloomsMonth11;
         this.bloomsMonth12 = bloomsMonth12;
+        this.createdAt = createdAt;
     }
 
     public Plant(Plant other) {
@@ -100,6 +104,7 @@ public class Plant implements Parcelable {
         this.bloomsMonth10 = other.bloomsMonth10;
         this.bloomsMonth11 = other.bloomsMonth11;
         this.bloomsMonth12 = other.bloomsMonth12;
+        this.createdAt = other.createdAt;
     }
 
     @Ignore
@@ -130,6 +135,7 @@ public class Plant implements Parcelable {
         this.bloomsMonth10 = other.isBloomsMonth10();
         this.bloomsMonth11 = other.isBloomsMonth11();
         this.bloomsMonth12 = other.isBloomsMonth12();
+        this.createdAt = other.getCreatedAt();
     }
 
     public Plant(PlantWithListsDto other){
@@ -155,6 +161,7 @@ public class Plant implements Parcelable {
         this.bloomsMonth10 = other.isBloomsMonth10();
         this.bloomsMonth11 = other.isBloomsMonth11();
         this.bloomsMonth12 = other.isBloomsMonth12();
+        this.createdAt = other.getCreatedAt();
     }
 
 
@@ -333,6 +340,14 @@ public class Plant implements Parcelable {
         this.bloomsMonth12 = bloomsMonth12;
     }
 
+    public String getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
+    }
+
     @Override
     public String toString() {
         return "Plant{" +
@@ -358,6 +373,7 @@ public class Plant implements Parcelable {
                 ", BloomsMonth10=" + bloomsMonth10 +
                 ", bloomsMonth11=" + bloomsMonth11 +
                 ", bloomsMonth12=" + bloomsMonth12 +
+                ", createdAt="+ createdAt +
                 '}';
     }
 
@@ -366,104 +382,33 @@ public class Plant implements Parcelable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Plant plant = (Plant) o;
-        return createdBy == plant.createdBy && category == plant.category && createdInCloud == plant.createdInCloud && deleted == plant.deleted && syncedWithCloud == plant.syncedWithCloud && bloomsMonth1 == plant.bloomsMonth1 && bloomsMonth2 == plant.bloomsMonth2 && bloomsMonth3 == plant.bloomsMonth3 && bloomsMonth4 == plant.bloomsMonth4 && bloomsMonth5 == plant.bloomsMonth5 && bloomsMonth6 == plant.bloomsMonth6 && bloomsMonth7 == plant.bloomsMonth7 && bloomsMonth8 == plant.bloomsMonth8 && bloomsMonth9 == plant.bloomsMonth9 && bloomsMonth10 == plant.bloomsMonth10 && bloomsMonth11 == plant.bloomsMonth11 && bloomsMonth12 == plant.bloomsMonth12 && plantId.equals(plant.plantId) && Objects.equals(title, plant.title) && Objects.equals(content, plant.content) && Objects.equals(createdTime, plant.createdTime) && Objects.equals(mainPhotoName, plant.mainPhotoName);
+        return category == plant.category && createdInCloud == plant.createdInCloud && deleted == plant.deleted && syncedWithCloud == plant.syncedWithCloud && bloomsMonth1 == plant.bloomsMonth1 && bloomsMonth2 == plant.bloomsMonth2 && bloomsMonth3 == plant.bloomsMonth3 && bloomsMonth4 == plant.bloomsMonth4 && bloomsMonth5 == plant.bloomsMonth5 && bloomsMonth6 == plant.bloomsMonth6 && bloomsMonth7 == plant.bloomsMonth7 && bloomsMonth8 == plant.bloomsMonth8 && bloomsMonth9 == plant.bloomsMonth9 && bloomsMonth10 == plant.bloomsMonth10 && bloomsMonth11 == plant.bloomsMonth11 && bloomsMonth12 == plant.bloomsMonth12 && plantId.equals(plant.plantId) && Objects.equals(createdBy, plant.createdBy) && Objects.equals(title, plant.title) && Objects.equals(content, plant.content) && Objects.equals(createdTime, plant.createdTime) && Objects.equals(mainPhotoName, plant.mainPhotoName) && Objects.equals(createdAt, plant.createdAt);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(plantId, createdBy, title, content, createdTime, mainPhotoName, category, createdInCloud, deleted, syncedWithCloud, bloomsMonth1, bloomsMonth2, bloomsMonth3, bloomsMonth4, bloomsMonth5, bloomsMonth6, bloomsMonth7, bloomsMonth8, bloomsMonth9, bloomsMonth10, bloomsMonth11, bloomsMonth12);
+        return Objects.hash(plantId, createdBy, title, content, createdTime, mainPhotoName, category, createdInCloud, deleted, syncedWithCloud, bloomsMonth1, bloomsMonth2, bloomsMonth3, bloomsMonth4, bloomsMonth5, bloomsMonth6, bloomsMonth7, bloomsMonth8, bloomsMonth9, bloomsMonth10, bloomsMonth11, bloomsMonth12, createdAt);
     }
 
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(this.plantId);
-        dest.writeString(this.createdBy);
-        dest.writeString(this.title);
-        dest.writeString(this.content);
-        dest.writeString(this.createdTime);
-        dest.writeString(this.mainPhotoName);
-        dest.writeInt(this.category);
-        dest.writeByte(this.createdInCloud ? (byte) 1 : (byte) 0);
-        dest.writeByte(this.deleted ? (byte) 1 : (byte) 0);
-        dest.writeByte(this.syncedWithCloud ? (byte) 1 : (byte) 0);
-        dest.writeByte(this.bloomsMonth1 ? (byte) 1 : (byte) 0);
-        dest.writeByte(this.bloomsMonth2 ? (byte) 1 : (byte) 0);
-        dest.writeByte(this.bloomsMonth3 ? (byte) 1 : (byte) 0);
-        dest.writeByte(this.bloomsMonth4 ? (byte) 1 : (byte) 0);
-        dest.writeByte(this.bloomsMonth5 ? (byte) 1 : (byte) 0);
-        dest.writeByte(this.bloomsMonth6 ? (byte) 1 : (byte) 0);
-        dest.writeByte(this.bloomsMonth7 ? (byte) 1 : (byte) 0);
-        dest.writeByte(this.bloomsMonth8 ? (byte) 1 : (byte) 0);
-        dest.writeByte(this.bloomsMonth9 ? (byte) 1 : (byte) 0);
-        dest.writeByte(this.bloomsMonth10 ? (byte) 1 : (byte) 0);
-        dest.writeByte(this.bloomsMonth11 ? (byte) 1 : (byte) 0);
-        dest.writeByte(this.bloomsMonth12 ? (byte) 1 : (byte) 0);
-    }
-
-    public void readFromParcel(Parcel source) {
-        this.plantId = source.readString();
-        this.createdBy = source.readString();
-        this.title = source.readString();
-        this.content = source.readString();
-        this.createdTime = source.readString();
-        this.mainPhotoName = source.readString();
-        this.category = source.readInt();
-        this.createdInCloud = source.readByte() != 0;
-        this.deleted = source.readByte() != 0;
-        this.syncedWithCloud = source.readByte() != 0;
-        this.bloomsMonth1 = source.readByte() != 0;
-        this.bloomsMonth2 = source.readByte() != 0;
-        this.bloomsMonth3 = source.readByte() != 0;
-        this.bloomsMonth4 = source.readByte() != 0;
-        this.bloomsMonth5 = source.readByte() != 0;
-        this.bloomsMonth6 = source.readByte() != 0;
-        this.bloomsMonth7 = source.readByte() != 0;
-        this.bloomsMonth8 = source.readByte() != 0;
-        this.bloomsMonth9 = source.readByte() != 0;
-        this.bloomsMonth10 = source.readByte() != 0;
-        this.bloomsMonth11 = source.readByte() != 0;
-        this.bloomsMonth12 = source.readByte() != 0;
-    }
-
-    protected Plant(Parcel in) {
-        this.plantId = in.readString();
-        this.createdBy = in.readString();
-        this.title = in.readString();
-        this.content = in.readString();
-        this.createdTime = in.readString();
-        this.mainPhotoName = in.readString();
-        this.category = in.readInt();
-        this.createdInCloud = in.readByte() != 0;
-        this.deleted = in.readByte() != 0;
-        this.syncedWithCloud = in.readByte() != 0;
-        this.bloomsMonth1 = in.readByte() != 0;
-        this.bloomsMonth2 = in.readByte() != 0;
-        this.bloomsMonth3 = in.readByte() != 0;
-        this.bloomsMonth4 = in.readByte() != 0;
-        this.bloomsMonth5 = in.readByte() != 0;
-        this.bloomsMonth6 = in.readByte() != 0;
-        this.bloomsMonth7 = in.readByte() != 0;
-        this.bloomsMonth8 = in.readByte() != 0;
-        this.bloomsMonth9 = in.readByte() != 0;
-        this.bloomsMonth10 = in.readByte() != 0;
-        this.bloomsMonth11 = in.readByte() != 0;
-        this.bloomsMonth12 = in.readByte() != 0;
-    }
-
-    public static final Creator<Plant> CREATOR = new Creator<Plant>() {
-        @Override
-        public Plant createFromParcel(Parcel source) {
-            return new Plant(source);
+    public boolean bloomsInCurrentMonth() {
+        int currentMonth = Calendar.getInstance().get(Calendar.MONTH) + 1; // Kalender måned er 0-baseret
+        switch (currentMonth) {
+            case 1: return bloomsMonth1;
+            case 2: return bloomsMonth2;
+            case 3: return bloomsMonth3;
+            case 4: return bloomsMonth4;
+            case 5: return bloomsMonth5;
+            case 6: return bloomsMonth6;
+            case 7: return bloomsMonth7;
+            case 8: return bloomsMonth8;
+            case 9: return bloomsMonth9;
+            case 10: return bloomsMonth10;
+            case 11: return bloomsMonth11;
+            case 12: return bloomsMonth12;
+            default: return false;
         }
+    }
 
-        @Override
-        public Plant[] newArray(int size) {
-            return new Plant[size];
-        }
-    };
+
+
 }

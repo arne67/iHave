@@ -1,7 +1,5 @@
 package com.susarne.ihave2.ui.login;
 
-import static com.google.common.base.Predicates.isNull;
-
 import android.app.Activity;
 
 import androidx.annotation.NonNull;
@@ -20,7 +18,6 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
@@ -55,12 +52,13 @@ public class LoginActivity extends AppCompatActivity {
     EditText mFullNameEditText;
     EditText mEmailEditText;
     Button mLoginButton;
-    Button mRegisterButton;
+    Button mSendConfirmMailButton;
     Button mSelectLoginButton;
     Button mSelectRegisterButton;
     ProgressBar mLoadingProgressBar;
 
     private FirebaseAuth mAuth;
+    private FirebaseUser mUser;
 
     private static final String TAG = "LoginActivity";
 
@@ -103,12 +101,17 @@ public class LoginActivity extends AppCompatActivity {
 //        }
         //firebase authentification i stedet for
         //mAuth.signOut(); //vi signer ud for at teste at det er en ny bruger
-        FirebaseUser currentUser = mAuth.getCurrentUser();
+        mUser = mAuth.getCurrentUser();
 
-        if (currentUser != null) {
-            Log.d(TAG, "onCreate: startmain");
-            startMainActivity();
-            finish();
+        if (mUser != null) {
+            if(mUser.isEmailVerified()){
+                Log.d(TAG, "onCreate: startmain");
+                startMainActivity();
+                finish();
+            } else {
+                setStateRegisterOrLogin();
+                setStateUnconfirmed();
+            }
         } else {
             setStateRegisterOrLogin();
         }
@@ -143,19 +146,28 @@ public class LoginActivity extends AppCompatActivity {
                 startRegisterActivity();
             }
         });
+        mSendConfirmMailButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "onClick: sendconfirmmailbutton");
+                mUser.sendEmailVerification();
+            }
+        });
 
     }
 
     private void login(String email, String password) {
         Log.d(TAG, "login: "+email+"/"+password);
+        mLoadingProgressBar.setVisibility(View.VISIBLE);
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
+                        mLoadingProgressBar.setVisibility(View.GONE);
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            if (user.isEmailVerified()) {
+                            mUser = mAuth.getCurrentUser();
+                            if (mUser.isEmailVerified()) {
                                 // Proceed with authenticated and verified user
                                 setResult(Activity.RESULT_OK);
                                 //savelogin (userid og accesstoken) skal ske ved svar på registrering i railway
@@ -195,7 +207,7 @@ public class LoginActivity extends AppCompatActivity {
         mFullNameEditText = binding.fullName;
         mEmailEditText = binding.email;
         mLoginButton = binding.login;
-        mRegisterButton = binding.register;
+        mSendConfirmMailButton = binding.sendConfirmMail;
         mSelectRegisterButton = binding.selectRegister;
         mSelectLoginButton = binding.selectLogin;
         mLoadingProgressBar = binding.loading;
@@ -204,7 +216,8 @@ public class LoginActivity extends AppCompatActivity {
 
     private void setStateUnconfirmed() {
         binding.unconfirmedText.setVisibility(View.VISIBLE);
-
+        binding.sendConfirmMail.setVisibility(View.VISIBLE);
+        mSendConfirmMailButton.setEnabled(true);
     }
 
 
@@ -214,13 +227,14 @@ public class LoginActivity extends AppCompatActivity {
         binding.fullName.setVisibility(View.GONE);
         binding.email.setVisibility(View.GONE);
         binding.login.setVisibility(View.GONE);
-        binding.register.setVisibility(View.GONE);
+        binding.sendConfirmMail.setVisibility(View.GONE);
         binding.selectLogin.setVisibility(View.VISIBLE);
         binding.selectRegister.setVisibility(View.VISIBLE);
         binding.unconfirmedText.setVisibility(View.GONE);
 
         mSelectRegisterButton.setEnabled(true);
         mSelectLoginButton.setEnabled(true);
+        mSendConfirmMailButton.setEnabled(false);
 
     }
 
@@ -231,12 +245,14 @@ public class LoginActivity extends AppCompatActivity {
         binding.fullName.setVisibility(View.INVISIBLE);
         binding.email.setVisibility(View.INVISIBLE);
         binding.login.setVisibility(View.VISIBLE);
-        binding.register.setVisibility(View.GONE);
+        binding.sendConfirmMail.setVisibility(View.GONE);
         binding.selectLogin.setVisibility(View.GONE);
         binding.selectRegister.setVisibility(View.GONE);
         binding.unconfirmedText.setVisibility(View.GONE);
 
         mLoginButton.setEnabled(true);
+        mSelectRegisterButton.setEnabled(false);
+        mSendConfirmMailButton.setEnabled(false);
 
     }
 

@@ -4,12 +4,19 @@ import static com.susarne.ihave2.util.Constants.ACCESS_TOKEN_PHOTO;
 import static com.susarne.ihave2.util.Constants.WORKER_PLANT_ID;
 
 import android.content.Context;
+import android.os.Environment;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.storage.FileDownloadTask;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.susarne.ihave2.api.PlantApiClient;
 import com.susarne.ihave2.models.GetUpdatedPlantsDto;
 import com.susarne.ihave2.models.GooglePhotos.MediaItem;
@@ -31,13 +38,17 @@ import retrofit2.Response;
 
 
 public class GetUpdatedPlantWorker extends Worker {
-    private static final String TAG = "GetPlantWorker";
+    private static final String TAG = "GetUpdatedPlantWorker";
     private static final String APP_TAG = "MyCustomApp";
     private PlantRepository mPlantRepository;
     private boolean mSucces;
     private String mAccessTokenString;
     private Context mContext;
     private File mMediaStorageDir, mImageFile;
+
+    private FirebaseAuth mAuth;
+
+    private StorageReference mStorageRef;
 
     public GetUpdatedPlantWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -47,23 +58,29 @@ public class GetUpdatedPlantWorker extends Worker {
     @NonNull
     @Override
     public Result doWork() {
+        Log.d(TAG, "..on GetUpdatedPlant.. doWork: ");
         int workerPlantId = getInputData().getInt(WORKER_PLANT_ID, 0);
         mContext = ContextSingleton.getContekst();
         mAccessTokenString = Token.getAccessToken(ACCESS_TOKEN_PHOTO);
+        mAuth = FirebaseAuth.getInstance();
+        mStorageRef = FirebaseStorage.getInstance().getReference("uploads");
 
         GooglePhoto.createPhotoDir(getApplicationContext());
+        Log.d(TAG, "doWork: getLastGetUpdatedPlantsUntil(): " + getLastGetUpdatedPlantsUntil());
         GetUpdatedPlantsDto getUpdatedPlantsDto = getUpdatedPlants(getLastGetUpdatedPlantsUntil());
 
-        for (Plant plant : getUpdatedPlantsDto.getPlants()) {
-            upsertPlant(plant);
-        }
-        for (PlantPhoto plantPhoto : getUpdatedPlantsDto.getPlantPhotos()) {
-            MediaItem mediaItem = GooglePhoto.getMediaItem(plantPhoto.getUploadedPhotoReference());
-            if (mediaItem != null) {
-                GooglePhoto.downloadImage(mediaItem.getBaseUrl(), plantPhoto.getPhotoName(), getApplicationContext());
+        if (getUpdatedPlantsDto != null) {
+            for (Plant plant : getUpdatedPlantsDto.getPlants()) {
+                upsertPlant(plant);
             }
-            upsertPlantPhoto(plantPhoto);
+            for (PlantPhoto plantPhoto : getUpdatedPlantsDto.getPlantPhotos()) {
+                upsertPlantPhoto(plantPhoto);
+            }
+            for (PlantPhoto plantPhoto : getUpdatedPlantsDto.getPlantPhotos()) {
+                downloadImage(plantPhoto);
+            }
         }
+
         mPlantRepository.setLastGetUpdatedPlantsUntil(getUpdatedPlantsDto.getUpdatedUntil());
 
 
@@ -88,8 +105,8 @@ public class GetUpdatedPlantWorker extends Worker {
             return "1900-01-01 00:00:00.000000";
 
         } else {
-            return "1900-01-01 00:00:00.000000";
-            //return system.getLastGetUpdatedPlantsUntil();
+            //return "1900-01-01 00:00:00.000000";
+            return system.getLastGetUpdatedPlantsUntil();
         }
 
 
@@ -121,9 +138,9 @@ public class GetUpdatedPlantWorker extends Worker {
 
 
     private GetUpdatedPlantsDto getUpdatedPlants(String lastGetUpdatedPlantsUntil) {
-        //her skal vi kalde retrofit for at uploade synkront
+
         //Call<GetUpdatedPlantsDto> call = PlantApiClient.getInstance().getMyApi().getUpdatedPlants(CurrentUser.getUserId(), lastGetUpdatedPlantsUntil);
-        Call<GetUpdatedPlantsDto> call = PlantApiClient.getInstance().getMyApi().getUpdatedPlants(1, lastGetUpdatedPlantsUntil);
+        Call<GetUpdatedPlantsDto> call = PlantApiClient.getInstance().getMyApi().getUpdatedPlants(mAuth.getCurrentUser().getUid(), lastGetUpdatedPlantsUntil);
         try {
             Response<GetUpdatedPlantsDto> response = call.execute();
             if (response.isSuccessful()) {
@@ -145,6 +162,29 @@ public class GetUpdatedPlantWorker extends Worker {
     private PlantWithLists getFirstPlant() {
         PlantWithLists plantWithLists = mPlantRepository.getFirstPlant();
         return plantWithLists;
+    }
+
+    private void downloadImage(PlantPhoto plantPhoto) {
+        Log.d(TAG, "downloadImage: plantphoto.getPhotoName(): "+plantPhoto.getPhotoName());
+
+        File mediaStorageDir = new File(getApplicationContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES), APP_TAG);
+        File localFile = new File(mediaStorageDir.getPath() + File.separator + plantPhoto.getPhotoName());
+
+        StorageReference childStorageRef = mStorageRef.child("images/" + plantPhoto.getPhotoName());
+
+        //mStorageRef.child("images/" + plantPhoto.getPhotoName()).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+        childStorageRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                Log.d(TAG, "onSuccess: vi har hentet image ved firebase");
+                // Handle the URI, e.g., load it into an ImageView using a library like Glide or Picasso
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                // Handle any errors
+            }
+        });
     }
 
 

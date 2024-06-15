@@ -1,6 +1,7 @@
 package com.susarne.ihave2.workers;
 
 import android.content.Context;
+import android.net.Uri;
 import android.os.Environment;
 import android.util.Log;
 
@@ -10,9 +11,13 @@ import androidx.work.WorkerParameters;
 
 import static com.susarne.ihave2.util.Constants.*;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
-import com.susarne.ihave2.api.GooglePhotoApiClient;
-import com.susarne.ihave2.api.GooglePhotoApiScalarsClient;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+
 import com.susarne.ihave2.api.PlantApiClient;
 import com.susarne.ihave2.models.GetUserRespondDto;
 import com.susarne.ihave2.models.GooglePhotos.Album;
@@ -23,7 +28,7 @@ import com.susarne.ihave2.models.GooglePhotos.MediaItem;
 import com.susarne.ihave2.models.GooglePhotos.NewMediaItem;
 import com.susarne.ihave2.models.GooglePhotos.NewMediaItemResult;
 import com.susarne.ihave2.models.GooglePhotos.SimpleMediaItem;
-import com.susarne.ihave2.models.PhotoAlbumIdDto;
+import com.susarne.ihave2.models.AppTokenDto;
 import com.susarne.ihave2.models.Plant;
 import com.susarne.ihave2.models.PlantDto;
 import com.susarne.ihave2.models.PlantPhoto;
@@ -36,6 +41,7 @@ import com.susarne.ihave2.util.Token;
 import com.susarne.ihave2.util.CurrentUser;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.susarne.ihave2.util.Utility;
 
 import java.io.File;
 import java.io.IOException;
@@ -58,6 +64,7 @@ public class SavePlantWorker extends Worker {
     private File mMediaStorageDir, mImageFile;
 
     private FirebaseAuth mAuth;
+    private StorageReference mStorageRef;
 
     public SavePlantWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -68,6 +75,7 @@ public class SavePlantWorker extends Worker {
     @Override
     public Result doWork() {
         mAuth = FirebaseAuth.getInstance();
+        mStorageRef = FirebaseStorage.getInstance().getReference("uploads");
 
         int workerPlantId = getInputData().getInt(WORKER_PLANT_ID, 0);
         sleep();
@@ -114,9 +122,6 @@ public class SavePlantWorker extends Worker {
             plantWithLists = getNotUploadedPlant();
         }
 
-        if (CurrentUser.getPhotoAlbumId()==null && !CurrentUser.isPhotoAlbumIdUploaded()){
-            uploadAlbumId(CurrentUser.getPhotoAlbumId());
-        }
 
         return Result.success();
     }
@@ -141,7 +146,7 @@ public class SavePlantWorker extends Worker {
         PlantWithListsDto plantWithListsDto = getPlantWithlistsDto(plant);
         plantWithListsDto.setPlantPhotos(null);
         String token = CurrentUser.getAccessToken();
-        token="xxx";
+        token = "xxx";
         Log.d(TAG, "uploadNewPlant: a# plantwithlistsdto " + plantWithListsDto.toString());
         Call<PlantWithListsDto> call = PlantApiClient.getInstance().getMyApi().createPlant(token, plantWithListsDto);
         try {
@@ -158,8 +163,9 @@ public class SavePlantWorker extends Worker {
             e.printStackTrace();
             Log.d(TAG, "uploadPlant: io-fejl");
         }
-        for (PlantPhoto p:plant.plantPhotos) {
+        for (PlantPhoto p : plant.plantPhotos) {
             uploadNewPlantPhoto(p);
+
         }
     }
 
@@ -243,12 +249,12 @@ public class SavePlantWorker extends Worker {
     }
 
 
-
     private void uploadNewPlantPhoto(PlantPhoto plantPhoto) {
         //her skal vi kalde retrofit for at uploade synkront
         Log.d(TAG, "uploadPlantPhoto: ");
         mSucces = false;
         PlantPhotoDto plantPhotoDto = getPlantPhotoDto(plantPhoto);
+        plantPhotoDto.setUploadedPhotoReference(plantPhotoDto.getPhotoName());
 
         String token = "";
         Call<PlantPhotoDto> call = PlantApiClient.getInstance().getMyApi().createPlantPhoto(token, plantPhotoDto);
@@ -262,7 +268,7 @@ public class SavePlantWorker extends Worker {
                 //markPlantAsUploaded(response.body().getPlantId());
             } else {
                 // handle unsuccessful response
-                Log.d(TAG, "uploadPlant: notfound" + response.errorBody().toString());
+                Log.d(TAG, "uploadPlantPhoto: notfound" + response.errorBody().toString());
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -276,7 +282,7 @@ public class SavePlantWorker extends Worker {
         mSucces = false;
         PlantPhotoDto plantPhotoDto = getPlantPhotoDto(plantPhoto);
         String token = "";
-        Call<PlantPhotoDto> call = PlantApiClient.getInstance().getMyApi().updatePlantPhoto(token, plantPhotoDto,plantPhotoDto.getCreatedBy(),plantPhotoDto.getPhotoId());
+        Call<PlantPhotoDto> call = PlantApiClient.getInstance().getMyApi().updatePlantPhoto(token, plantPhotoDto, plantPhotoDto.getCreatedBy(), plantPhotoDto.getPhotoId());
         try {
             Response<PlantPhotoDto> response = call.execute();
             if (response.isSuccessful()) {
@@ -346,9 +352,34 @@ public class SavePlantWorker extends Worker {
 
     private MediaItem uploadPhoto(PlantPhoto plantPhoto) {
         Log.d(TAG, "uploadPhoto: " + plantPhoto.getPhotoName());
-        return uploadMedia(plantPhoto);
+        uploadFile(plantPhoto);
+        return null;
+        //return uploadMedia(plantPhoto);
 
     }
+
+    private void uploadFile(PlantPhoto plantPhoto) {
+        mMediaStorageDir = new File(mContext.getExternalFilesDir(Environment.DIRECTORY_PICTURES), APP_TAG);
+        Uri file = Uri.fromFile(new File(mMediaStorageDir.getPath() + File.separator + plantPhoto.getPhotoName()));
+        mImageFile = new File(mMediaStorageDir.getPath() + File.separator + plantPhoto.getPhotoName());
+
+        StorageReference fileReference = mStorageRef.child(Utility.getCloudImageFolder() +"/" + plantPhoto.getPhotoName());
+
+        fileReference.putFile(file)
+                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        Log.d(TAG, "onSuccess: upload successfull");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.d(TAG, "onFailure: e.message" + e.getMessage());
+                    }
+                });
+    }
+
 
     private void markPhotoAsUploaded(MediaItem mediaItem, PlantPhoto plantPhoto) {
         plantPhoto.setUploadedPhotoReference(mediaItem.getId());
@@ -391,187 +422,6 @@ public class SavePlantWorker extends Worker {
         }
     }
 
-    private MediaItem uploadMedia(PlantPhoto plantPhoto) {
-        String bearerToken = "Bearer " + mAccessTokenString;
-        Log.d(TAG, "uploadMedia: 1");
-        mMediaStorageDir = new File(mContext.getExternalFilesDir(Environment.DIRECTORY_PICTURES), APP_TAG);
-        mImageFile = new File(mMediaStorageDir.getPath() + File.separator + plantPhoto.getPhotoName());
-        RequestBody requestBody = RequestBody.create(mImageFile, MediaType.parse("application/octet"));
-        Call<String> call = GooglePhotoApiScalarsClient.getInstance().getMyApi().uploadMedia(bearerToken, requestBody);
-        try {
-            Response<String> response = call.execute();
-            if (response.isSuccessful()) {
-                Log.d(TAG, "onResponse: uploadMedia 2");
-                String respbody = response.body();
-                Log.d(TAG, "onResponse: uploadMedia" + response.code());
-                Log.d(TAG, "onResponse: upload respbody " + respbody);
-                String uploadToken = respbody;
-                return addToAlbum(uploadToken);
-            } else {
-                // handle unsuccessful response
-                Log.d(TAG, "uploadMedia: failed" + response.errorBody().toString());
-                return null;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            Log.d(TAG, "uploadMedia: io-fejl");
-            return null;
-        }
-
-    }
 
 
-    private MediaItem addToAlbum(String uploadToken) {
-        String bearerToken = "Bearer " + mAccessTokenString;
-        Log.d(TAG, "addToAlbum 1 ");
-        SimpleMediaItem simpleMediaItem = new SimpleMediaItem();
-        simpleMediaItem.setUploadToken(uploadToken);
-        NewMediaItem newMediaItem = new NewMediaItem();
-        newMediaItem.setDescription("dette er et ihave foto");
-        newMediaItem.setSimpleMediaItem(simpleMediaItem);
-        BatchCreateRequestBody batchCreateRequestBody = new BatchCreateRequestBody();
-        ArrayList<NewMediaItem> newMediaItems = new ArrayList<>();
-        newMediaItems.add(newMediaItem);
-        batchCreateRequestBody.setNewMediaItems(newMediaItems);
-        //mappe Ihave1
-        batchCreateRequestBody.setAlbumId("APmtqhqTsIwY1-adjsTFnWFS1S9yQynVN8fHuEi4cwYa___VZ0aEPZQA8vgNs2kBx7JlJQ7j7mpK");
-        batchCreateRequestBody.setAlbumId(getAlbumId());
-
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        String jsonStr = gson.toJson(batchCreateRequestBody);
-        Log.d(TAG, "addToAlbum: jsonstr" + jsonStr);
-        RequestBody requestBody = RequestBody.create(jsonStr, MediaType.parse("application/json"));
-        Call<BatchCreateRespondBody> call = GooglePhotoApiClient.getInstance().getMyApi().addToAlbum(bearerToken, batchCreateRequestBody);
-        try {
-            Response<BatchCreateRespondBody> response = call.execute();
-            if (response.isSuccessful()) {
-                Log.d(TAG, "onResponse: addToAlbum 1");
-                mSucces = true;
-                List<NewMediaItemResult> newMediaItemResults = response.body().getNewMediaItemResults();
-                Log.d(TAG, "onResponse: addToAlbum newMediaItemResults: " + newMediaItemResults);
-                return newMediaItemResults.get(0).mediaItem;
-
-                //String mediaItemId=newMediaItemResults.get(0).mediaItem.getId();
-                //return mediaItemId;
-            } else {
-                // handle unsuccessful response
-                Log.d(TAG, "addToAlbum: failed" + response.errorBody().toString());
-                return null;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            Log.d(TAG, "addToAlbum: io-fejl");
-            return null;
-        }
-
-    }
-
-    private String getAlbumId() {
-        String photoAlbumId = CurrentUser.getPhotoAlbumId();
-        Log.d(TAG, "getAlbumId: photoAlbumId 1: "+photoAlbumId);
-        if (photoAlbumId==null){
-            photoAlbumId=getPhotoAlbumIdFromCloud();
-            Log.d(TAG, "getAlbumId: photoAlbumId 2: "+photoAlbumId);
-            if (photoAlbumId==null){
-                return createPhotoAlbum();
-            } else {
-                CurrentUser.putPhotoAlbumId(photoAlbumId);
-                return photoAlbumId;
-            }
-        } else {
-            CurrentUser.putPhotoAlbumId(photoAlbumId);
-            return photoAlbumId;
-        }
-        
-    }
-
-    private String getPhotoAlbumIdFromCloud() {
-        //her skal vi kalde retrofit for at uploade synkront
-        Log.d(TAG, "uploadPlantPhoto: ");
-        mSucces = false;
-        String token = "";
-        Call<GetUserRespondDto> call = PlantApiClient.getInstance().getMyApi().getUser(mAuth.getCurrentUser().getUid());
-        try {
-            Response<GetUserRespondDto> response = call.execute();
-            if (response.isSuccessful()) {
-                // handle successful response
-                Log.d(TAG, "uploadPlant: " + response.body());
-                mSucces = true;
-                return response.body().getPhotoAlbumId();
-            } else {
-                // handle unsuccessful response
-                Log.d(TAG, "uploadPlant: notfound" + response.errorBody().toString());
-                return null;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            Log.d(TAG, "uploadPlant: io-fejl");
-            return null;
-        }
-
-
-    }
-
-    private String createPhotoAlbum() {
-        String albumId;
-        String bearerToken = "Bearer " + mAccessTokenString;
-        Log.d(TAG, "createAlbum 1 ");
-        Album album = new Album();
-        album.setTitle("iHave1");
-        AlbumsCreateRequestBody albumsCreateRequestBody = new AlbumsCreateRequestBody();
-        albumsCreateRequestBody.setAlbum(album);
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        String jsonStr = gson.toJson(albumsCreateRequestBody);
-        Log.d(TAG, "createAlbum: jsonstr" + jsonStr);
-        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json"), jsonStr);
-        Call<Album> call = GooglePhotoApiClient.getInstance().getMyApi().createAlbum(bearerToken, requestBody);
-        try {
-            Response<Album> response = call.execute();
-            if (response.isSuccessful()) {
-                // handle successful response
-                mSucces = true;
-                Log.d(TAG, "uploadPlant: " + response.body());
-                String photoAlbumId=response.body().getId();
-                CurrentUser.putPhotoAlbumId(photoAlbumId);
-                uploadAlbumId(photoAlbumId);
-                return photoAlbumId;
-            } else {
-                // handle unsuccessful response
-                Log.d(TAG, "uploadPlant: notfound" + response.errorBody().toString());
-                return null;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            Log.d(TAG, "uploadPlant: io-fejl");
-            return null;
-        }
-    }
-
-    private void uploadAlbumId(String photoAlbumId) {
-        //her skal vi kalde retrofit for at uploade synkront
-        Log.d(TAG, "uploadAlbumId: ");
-        mSucces = false;
-        PhotoAlbumIdDto photoAlbumIdDto = new PhotoAlbumIdDto();
-        photoAlbumIdDto.setPhotoAlbumId(photoAlbumId);
-
-        String token = "";
-        Call<Void> call = PlantApiClient.getInstance().getMyApi().updatePhotoAlbumId(token, mAuth.getCurrentUser().getUid(),photoAlbumIdDto);
-        try {
-            Response<Void> response = call.execute();
-            if (response.isSuccessful()) {
-                // handle successful response
-                Log.d(TAG, "uploadPlant: " + response.body());
-                mSucces = true;
-                CurrentUser.putPhotoAlbumIdUploaded(true);
-                //uploadPhotos(plant.plantPhotos);
-                //markPlantAsUploaded(response.body().getPlantId());
-            } else {
-                // handle unsuccessful response
-                Log.d(TAG, "uploadPlant: notfound" + response.errorBody().toString());
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            Log.d(TAG, "uploadPlant: io-fejl");
-        }
-    }
 }

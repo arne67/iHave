@@ -8,7 +8,8 @@ import androidx.room.Relation;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PlantWithListsDto implements Parcelable{
+public class PlantWithListsDto {
+//public class PlantWithListsDto implements Parcelable{
     //#nytfelt
     private String plantId;
     private String createdBy;
@@ -32,6 +33,7 @@ public class PlantWithListsDto implements Parcelable{
     private boolean bloomsMonth10;
     private boolean bloomsMonth11;
     private boolean bloomsMonth12;
+    private String createdAt;
 
     @Relation(
             parentColumn = "plantId",
@@ -39,47 +41,36 @@ public class PlantWithListsDto implements Parcelable{
     )
     private List<PlantPhoto> plantPhotos;
 
-    protected PlantWithListsDto(Parcel in) {
-        plantId = in.readString();
-        createdBy =in.readString();
-        title = in.readString();
-        content = in.readString();
-        createdTime = in.readString();
-        mainPhotoName = in.readString();
-        category = in.readInt();
-        plantPhotos = in.createTypedArrayList(PlantPhoto.CREATOR);
-    }
+//    protected PlantWithListsDto(Parcel in) {
+//        plantId = in.readString();
+//        createdBy =in.readString();
+//        title = in.readString();
+//        content = in.readString();
+//        createdTime = in.readString();
+//        mainPhotoName = in.readString();
+//        category = in.readInt();
+//        plantPhotos = in.createTypedArrayList(PlantPhoto.CREATOR);
+//    }
     public PlantWithListsDto(PlantWithListsDto plantWithLists){
         //this.plant=new Plant(plantWithLists.plant);
         this.plantPhotos=new ArrayList<>(plantWithLists.plantPhotos);
     }
+
     public PlantWithListsDto(){
     }
 
 
-    public static final Creator<PlantWithListsDto> CREATOR = new Creator<PlantWithListsDto>() {
-        @Override
-        public PlantWithListsDto createFromParcel(Parcel in) {
-            return new PlantWithListsDto(in);
-        }
-
-        @Override
-        public PlantWithListsDto[] newArray(int size) {
-            return new PlantWithListsDto[size];
-        }
-    };
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel parcel, int i) {
-        //parcel.writeParcelable(plant, i);
-        parcel.writeTypedList(plantPhotos);
-    }
-
+//    public static final Creator<PlantWithListsDto> CREATOR = new Creator<PlantWithListsDto>() {
+//        @Override
+//        public PlantWithListsDto createFromParcel(Parcel in) {
+//            return new PlantWithListsDto(in);
+//        }
+//
+//        @Override
+//        public PlantWithListsDto[] newArray(int size) {
+//            return new PlantWithListsDto[size];
+//        }
+//    };
 
     public String  getPlantId() {return plantId;
     }
@@ -245,5 +236,13 @@ public class PlantWithListsDto implements Parcelable{
 
     public void setBloomsMonth12(boolean bloomsMonth12) {
         this.bloomsMonth12 = bloomsMonth12;
+    }
+
+    public String getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
     }
 }

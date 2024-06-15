@@ -31,6 +31,7 @@ public class PlantDto {
     private boolean bloomsMonth10;
     private boolean bloomsMonth11;
     private boolean bloomsMonth12;
+    private String createdAt;
 
     public PlantDto() {
     }
@@ -56,6 +57,7 @@ public class PlantDto {
         this.bloomsMonth10 = other.isBloomsMonth10();
         this.bloomsMonth11 = other.isBloomsMonth11();
         this.bloomsMonth12 = other.isBloomsMonth12();
+        this.createdAt = other.getCreatedAt();
     }
 
     public String getPlantId() {
@@ -216,5 +218,13 @@ public class PlantDto {
 
     public void setBloomsMonth12(boolean bloomsMonth12) {
         this.bloomsMonth12 = bloomsMonth12;
+    }
+
+    public String getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
     }
 }

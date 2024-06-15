@@ -37,8 +37,6 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.firebase.auth.FirebaseAuth;
-import com.susarne.ihave2.api.GooglePhotoApiClient;
-import com.susarne.ihave2.models.GooglePhotos.MediaItem;
 import com.susarne.ihave2.models.IntentExtra.PhotoListActivityIntentExtra;
 import com.susarne.ihave2.models.Plant;
 import com.susarne.ihave2.models.PlantPhoto;
@@ -167,11 +165,6 @@ public class PlantEditActivity extends AppCompatActivity implements
         } else {
             if (getIncomingIntent()) {
                 //this is an existing plant
-                speed(TAG, 14);
-                createRestOfEditedPlant();
-                speed(TAG, 15);
-                getSavedPlant();
-                speed(TAG, 16);
 
                 //copyEditedPlantToView();
             } else {
@@ -435,7 +428,7 @@ public class PlantEditActivity extends AppCompatActivity implements
             case R.id.collage: {
                 startPhotoList();
                 Log.d(TAG, "onClick: collagexxx");
-                // her kalder vi PhotoListActivity
+
                 break;
             }
             case R.id.multi_photo_button: {
@@ -550,7 +543,11 @@ public class PlantEditActivity extends AppCompatActivity implements
                     @Override
                     public void onActivityResult(ActivityResult result) {
                         if (result.getResultCode() == RESULT_OK) {
-                            mEditedPlant = result.getData().getParcelableExtra("updated_plant");
+                            PhotoListActivityIntentExtra photoListActivityIntentExtra = result.getData().getParcelableExtra("photoListActivityIntentExtra");
+                            Log.d(TAG, "onActivityResult: photoListActivityIntentExtra.getMainPhotoName(): "+photoListActivityIntentExtra.getMainPhotoName());
+                            Log.d(TAG, "onActivityResult: photoListActivityIntentExtra.toString(): "+photoListActivityIntentExtra.toString());
+                            mEditedPlant.plantPhotos=photoListActivityIntentExtra.getPlantPhotos();
+                            mEditedPlant.plant.setMainPhotoName(photoListActivityIntentExtra.getMainPhotoName());
 //                            if (!mMainPhotoName.equals(mEditedPlant.plant.getMainPhotoName())){
                             mMainPhotoName = mEditedPlant.plant.getMainPhotoName();
                             showMainPhoto();
@@ -626,11 +623,10 @@ public class PlantEditActivity extends AppCompatActivity implements
 
     private boolean getIncomingIntent() {
 
-        if (getIntent().hasExtra("selected_plant")) {
-            mEditedPlant = getIntent().getParcelableExtra("selected_plant");
+        if (getIntent().hasExtra("selected_plantId")) {
+            String plantId = getIntent().getStringExtra("selected_plantId");
+            getPlant(plantId);
 
-            //nytfelt-detail
-            mViewModel.setNewPlant(false);
             return true;
         }
 
@@ -638,6 +634,22 @@ public class PlantEditActivity extends AppCompatActivity implements
         return false;
     }
 
+    private void getPlant(String plantId) {
+        mPlantRepository.retrievePlantById(plantId).observe(this, new Observer<PlantWithLists>() {
+            @Override
+            public void onChanged(PlantWithLists plant) {
+                mEditedPlant = plant;
+                //nytfelt-detail
+                mViewModel.setNewPlant(false);
+                speed(TAG, 14);
+                createRestOfEditedPlant();
+                speed(TAG, 15);
+                getSavedPlant();
+                speed(TAG, 16);
+
+            }
+        });
+    }
 
     private void setVisibility() {
         mBackArrowContainer.setVisibility(View.GONE);
@@ -654,6 +666,7 @@ public class PlantEditActivity extends AppCompatActivity implements
         //Log.d(TAG, "savePlant: bb1-2 "+mViewModel.getSavedPlant().toString());
         storeEditedPlantInViewModel();
         //Log.d(TAG, "savePlant: bb1-9 "+mViewModel.getSavedPlant().toString());
+        //her
         mViewModel.saveEditedPlant();
         //saveChanges();
     }
@@ -699,7 +712,7 @@ public class PlantEditActivity extends AppCompatActivity implements
     private void returnPlant() {
         // Put the String to pass back into an Intent and close this activity
         Intent intent = new Intent();
-        intent.putExtra("updated_plant", mEditedPlant);
+        intent.putExtra("updated_plantId", mEditedPlant.plant.getPlantId());
         setResult(RESULT_OK, intent);
     }
 
@@ -840,9 +853,11 @@ public class PlantEditActivity extends AppCompatActivity implements
     private void startPhotoList() {
         Intent intent = new Intent(this, PhotoListActivity.class);
         PhotoListActivityIntentExtra photoListActivityIntentExtra = new PhotoListActivityIntentExtra();
-        photoListActivityIntentExtra.setPlantWithLists(mEditedPlant);
+        photoListActivityIntentExtra.setTitle(mEditedPlant.plant.getTitle());
+        photoListActivityIntentExtra.setMainPhotoName(mEditedPlant.plant.getMainPhotoName());
+        photoListActivityIntentExtra.setPlantPhotos(mEditedPlant.plantPhotos);
         photoListActivityIntentExtra.setEditMode(true);
-        intent.putExtra("selected_plant", photoListActivityIntentExtra);
+        intent.putExtra("photoListActivityIntentExtra", photoListActivityIntentExtra);
 
         activityResultLauncher.launch(intent);
     }
@@ -853,95 +868,6 @@ public class PlantEditActivity extends AppCompatActivity implements
         mEditedPlant.plant.setCategory(i);
     }
 
-
-//    private void addToAlbum(String uploadToken) {
-//        String bearerToken = "Bearer " + mAccessTokenString;
-//        Log.d(TAG, "addToAlbum 1 ");
-//        SimpleMediaItem simpleMediaItem = new SimpleMediaItem();
-//        simpleMediaItem.setUploadToken(uploadToken);
-//        NewMediaItem newMediaItem = new NewMediaItem();
-//        newMediaItem.setDescription("dette er et ihave foto");
-//        newMediaItem.setSimpleMediaItem(simpleMediaItem);
-//        BatchCreateRequestBody batchCreateRequestBody = new BatchCreateRequestBody();
-//        ArrayList<NewMediaItem> newMediaItems = new ArrayList<>();
-//        newMediaItems.add(newMediaItem);
-//        batchCreateRequestBody.setNewMediaItems(newMediaItems);
-//        //mappe Ihave1
-//        batchCreateRequestBody.setAlbumId("APmtqhqTsIwY1-adjsTFnWFS1S9yQynVN8fHuEi4cwYa___VZ0aEPZQA8vgNs2kBx7JlJQ7j7mpK");
-//
-//        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-//        String jsonStr = gson.toJson(batchCreateRequestBody);
-//        Log.d(TAG, "addToAlbum: jsonstr" + jsonStr);
-//        RequestBody requestBody = RequestBody.create(jsonStr, MediaType.parse("application/json"));
-//        Call<String> call = GoogleApiClient.getInstance().getMyApi().addToAlbum(bearerToken, batchCreateRequestBody);
-//        call.enqueue(new Callback<String>() {
-//            @Override
-//            public void onResponse(Call<String> call, Response<String> response) {
-//                Log.d(TAG, "onResponse: addToAlbum 1");
-//                String myAlbums = response.body();
-//                Log.d(TAG, "onResponse: addToAlbum " + response.code());
-////                Log.d(TAG, "onResponse: createAlbum" + myAlbums.substring(0, 200));
-//            }
-//
-//            @Override
-//            public void onFailure(Call<String> call, Throwable t) {
-//                Log.d(TAG, "addToAlbum onFailure: 1" + t);
-//                Log.d(TAG, "addToAlbum onFailure: 1" + call);
-//                Toast.makeText(getApplicationContext(), "An error has occured", Toast.LENGTH_LONG).show();
-//            }
-//
-//        });
-//
-//    }
-
-
-    private void getMediaItem() {
-        String bearerToken = "Bearer " + mAccessTokenString;
-        String mediaItemId = "APmtqhpX3H_hTbmP1FPNkXEONKRBE8pLCnXKCM5BjvFAvUSupr26yrKYdnLEB5x7Lgs7W9sQic9_g_w6WVqhoDceKq5dzULYow";
-        Call<MediaItem> call = GooglePhotoApiClient.getInstance().getMyApi().getMediaItem(bearerToken, mediaItemId);
-        call.enqueue(new Callback<MediaItem>() {
-            @Override
-            public void onResponse(Call<MediaItem> call, Response<MediaItem> response) {
-                Log.d(TAG, "onResponse: getmediaitem ok svar");
-
-
-                //String respbody = response.body();
-                //Log.d(TAG, "onResponse: uploadMedia"+response.code());
-                //Log.d(TAG, "onResponse: upload respbody " + respbody);
-                Log.d(TAG, "onResponse: 1" + response.body().getDescription());
-                //Log.d(TAG, "onResponse: 1"+response.body().getBaseUrl());
-            }
-
-            @Override
-            public void onFailure(Call<MediaItem> call, Throwable t) {
-                Log.d(TAG, "onFailure: getmediaitem 1");
-                Toast.makeText(getApplicationContext(), "An error has occured", Toast.LENGTH_LONG).show();
-            }
-
-        });
-    }
-
-    private void downloadImage() {
-        Runnable runnable = new Runnable() {
-            public void run() {
-                //some code here
-                String imageURL = "https://lh3.googleusercontent.com/lr/AGiIYOXNckJeWODN7fkRrbd5CzS5TWGmALz4wAYgIK4itKpVmIu_rzeXWkk_ayynO4jtgi43VaRF1HFNfGnfs3bApCTkwkPz8smEhJQmKZWpHrsGn--0vrHnY2FM1RoXWM_2sMkI-8F-JuX3d2Yfl27oKSrbJwcANVMHO4XEmqXyvPfgTmll4nrL_W44eFCY1s8PcePy1SbnRmPSBlU5wBJ6M7cRVZae2eBZ3VV2WMSjivwsHUYqNHlYUc1JZfPVFadRy1xWMFc5CR-Azaw2ta8myHurcosqACumdtMaCUlPcyxCENsLOIqiUTUrV4dmbZ5fKqG5aSIzigB27wfcwZedYDSH32vsVsxX4e4rBzLD534AiHKKEtHDYQ-xmEfXDz5ZZwsvSBbovBNTXNRIBBcbwelEJKCXcOssGqwPiYHvpYMweC9FYoEjMJTn80hF2jfj0pNymITfYHl-hmf-ka0px9si9EiKQ2p0PjEfWqhCYTBkMhwVZ_yC3cLs3I3indkADp0fQ6rg4cIZacSGGVQUpO2fRXncWTNA_1cJkvVK7Q0k-dk3vGqh2rvla37qxSJGSuPCNjgu2ftm2UFy49NiLPL-Qmh_n8HNLzPnZtdqEiMOzWnm1XXRVrjwcn2sEtOhacWwpmnE5svM9s9pR3cwNZZFe-nBBcByBgKfSyiaUD4xuIG5c7dGS8Hc5zkPe8uYmKDMgmVUteH-PWwo2HqfKdQpt-xlaYI_u5gA238GwOJD8bRMJqMHX9dqAJherIWqTvr7O7etzxmmsjykhX0Y-hzD4OAulQyjUAJ7IAIm3msz0wxDrDQpsC65Fdk9v6OZIaIfWGgugFpBWkMOWmdqLbeJ05bESr6hzXFh80UU5xsqAFrFasgAJJdVD86uJnfAIuC8ahnIJMY3gohXpEMr38P3u-S9Pp6Q4dmaz7pFLjGlCiXJ3TsLID_d9KKWBaCvmA49uD0qtDvKZFYC1w";
-                Bitmap bitmap;
-                try {
-                    // Download Image from URL
-                    InputStream input = new java.net.URL(imageURL).openStream();
-                    // Decode Bitmap
-                    bitmap = BitmapFactory.decodeStream(input);
-                    saveSmallFile(bitmap, getPhotoFileName());
-                } catch (Exception e) {
-                    Log.d(TAG, "run: fejl");
-                    e.printStackTrace();
-                }
-            }
-        };
-        Thread thread = new Thread(runnable);
-        thread.start();
-    }
 
     private void helpers() {
         Handler handler = new Handler();

@@ -4,11 +4,11 @@ package com.susarne.ihave2.api;
 import androidx.annotation.Keep;
 
 import com.susarne.ihave2.data.model.LoggedInUser;
+import com.susarne.ihave2.models.AppTokenDto;
 import com.susarne.ihave2.models.EntirePlantsDto;
 import com.susarne.ihave2.models.GetUpdatedPlantsDto;
 import com.susarne.ihave2.models.GetUserRespondDto;
 import com.susarne.ihave2.models.LoginRequestDto;
-import com.susarne.ihave2.models.PhotoAlbumIdDto;
 import com.susarne.ihave2.models.PlantDto;
 import com.susarne.ihave2.models.PlantFlowerMonthDto;
 import com.susarne.ihave2.models.PlantPhotoDto;
@@ -43,7 +43,7 @@ public interface PlantApi {
     Call<PlantsWithListsDto> getPlantsInUsersCommunities(@Path("userId") String userId);
 
     @GET("plants/updates/{userId}/{lastGetUpdatedPlantsUntil}")
-    Call<GetUpdatedPlantsDto> getUpdatedPlants(@Path("userId") int userId,
+    Call<GetUpdatedPlantsDto> getUpdatedPlants(@Path("userId") String userId,
                                                @Path("lastGetUpdatedPlantsUntil") String lastGetUpdatedPlantsUntil);
 
 
@@ -84,10 +84,10 @@ public interface PlantApi {
     Call<LoggedInUser> register(@Header("Authorization") String token,
                                 @Body RegisterRequestDto registerRequestDto);
 
-    @PATCH("users/{userId}/photo-album-id")
-    Call<Void> updatePhotoAlbumId(@Header("Authorization") String token,
+    @PATCH("users/{userId}/app-token")
+    Call<AppTokenDto> updateAppToken(@Header("Authorization") String token,
                                   @Path("userId") String userId,
-                                  @Body PhotoAlbumIdDto photoAlbumIdDto);
+                                  @Body AppTokenDto appTokenDto);
 
 
     @GET("users/{userId}")

@@ -49,11 +49,10 @@ public class PhotoListActivity extends AppCompatActivity implements
     //Vars
     //input ti photolistactivity
     PhotoListActivityIntentExtra mPhotoListActivityIntentExtra;
-    private PlantWithLists mPlant;
     private ActivityResultLauncher<Intent> activityResultLauncher;
     private int mCurrentPosition;
 
-    //liste hvor idx peger på index i tilsvarende liste i mPlant (input til photolistactivity)
+    //liste hvor idx peger på index i tilsvarende liste i mPhotoListActivityIntentExtra (input til photolistactivity)
     private final ArrayList<PhotoListElement> mPhotos = new ArrayList<>();
     // ui component
     //nytfelt-detail
@@ -77,7 +76,7 @@ public class PhotoListActivity extends AppCompatActivity implements
         getCallbackFromPhotoactivity();
 
         setSupportActionBar(findViewById(R.id.plants_toolbar));
-        //setTitle(mPlant.plant.getTitle());
+        //setTitle(mPhotoListActivityIntentExtra.plant.getTitle());
 
     }
 
@@ -87,12 +86,12 @@ public class PhotoListActivity extends AppCompatActivity implements
         Log.d(TAG, "onPlantClick: "+position);
         int idx = mPhotos.get(position).getIdx();
         PhotoActivityIntentExtra extra = new PhotoActivityIntentExtra();
-        extra.setPhotoName(mPlant.plantPhotos.get(idx).getPhotoName());
-        extra.setPlantTitle(mPlant.plant.getTitle());
+        extra.setPhotoName(mPhotoListActivityIntentExtra.getPlantPhotos().get(idx).getPhotoName());
+        extra.setPlantTitle(mPhotoListActivityIntentExtra.getTitle());
         extra.setEditMode(mPhotoListActivityIntentExtra.isEditMode());
         Intent intent = new Intent(this, PhotoActivity.class);
         intent.putExtra("selected_photo", extra);
-        Log.d(TAG, "onPlantClick: xy: "+mPlant.plantPhotos.get(position).getPhotoName());
+        Log.d(TAG, "onPlantClick: xy: "+mPhotoListActivityIntentExtra.getPlantPhotos().get(position).getPhotoName());
         mCurrentPosition=position;
         activityResultLauncher.launch(intent);
     }
@@ -100,8 +99,8 @@ public class PhotoListActivity extends AppCompatActivity implements
     @Override
     public void onMainPhotoButtonClicked(int position) {
         Log.d(TAG, "onMainPhotoButtonClicked: ");
-        mPlant.plant.setMainPhotoName(mPhotos.get(position).getPlantPhoto().getPhotoName());
-        Log.d(TAG, "onMainPhotoButtonClicked: mainphotoname: "+mPlant.plant.getMainPhotoName());
+        mPhotoListActivityIntentExtra.setMainPhotoName(mPhotos.get(position).getPlantPhoto().getPhotoName());
+        Log.d(TAG, "onMainPhotoButtonClicked: mainphotoname: "+mPhotoListActivityIntentExtra.getMainPhotoName());
     }
 
     @Override
@@ -145,18 +144,19 @@ public class PhotoListActivity extends AppCompatActivity implements
                             switch (action) {
                                 case ACTION_DELETE_PHOTO: {
                                     int idx = mPhotos.get(mCurrentPosition).getIdx();
-                                    mPlant.plantPhotos.get(idx).setDeleted(true);
-                                    Log.d(TAG, "onActivityResult: setnulltest "+mPlant.plantPhotos.get(idx).getPhotoName()+"/"+mPlant.plant.getMainPhotoName());
-                                    if (mPlant.plantPhotos.get(idx).getPhotoName().equals(mPlant.plant.getMainPhotoName())){
+                                    mPhotoListActivityIntentExtra.getPlantPhotos().get(idx).setDeleted(true);
+                                    Log.d(TAG, "onActivityResult: setnulltest "+mPhotoListActivityIntentExtra.getPlantPhotos().get(idx).getPhotoName()+"/"+mPhotoListActivityIntentExtra.getMainPhotoName());
+                                    if (mPhotoListActivityIntentExtra.getPlantPhotos().get(idx).getPhotoName().equals(mPhotoListActivityIntentExtra.getMainPhotoName())){
                                         Log.d(TAG, "onActivityResult: setnullexec");
-                                        mPlant.plant.setMainPhotoName(null);
+                                        mPhotoListActivityIntentExtra.setMainPhotoName(null);
                                     }
                                     mPhotos.remove(mCurrentPosition);
                                     mPhotosRecyclerAdapter.notifyDataSetChanged();
                                     break;
                                 }
                                 case ACTION_SELECT_MAIN_PHOTO: {
-                                    mPlant.plant.setMainPhotoName(mPhotos.get(mCurrentPosition).getPlantPhoto().getPhotoName());
+                                    Log.d(TAG, "onActivityResult: fromphotoactivity mCurrentPosition: "+mCurrentPosition+"/"+mPhotos.get(mCurrentPosition).getPlantPhoto().getPhotoName());
+                                    mPhotoListActivityIntentExtra.setMainPhotoName(mPhotos.get(mCurrentPosition).getPlantPhoto().getPhotoName());
                                     break;
                                 }
 
@@ -212,19 +212,18 @@ public class PhotoListActivity extends AppCompatActivity implements
             //TODO - slet photo i array list
             //mPhotos.get(viewHolder.getAdapterPosition()).setDeleted(true);
             int idx = mPhotos.get(viewHolder.getAdapterPosition()).getIdx();
-            mPlant.plantPhotos.get(idx).setDeleted(true);
+            mPhotoListActivityIntentExtra.getPlantPhotos().get(idx).setDeleted(true);
             mPhotos.remove(viewHolder.getAdapterPosition());
             mPhotosRecyclerAdapter.notifyDataSetChanged();
         }
     };
 
     private void getIncomingIntent() {
-        if (getIntent().hasExtra("selected_plant")) {
+        if (getIntent().hasExtra("photoListActivityIntentExtra")) {
 
-            mPhotoListActivityIntentExtra=getIntent().getParcelableExtra("selected_plant");
-            mPlant=mPhotoListActivityIntentExtra.getPlantWithLists();
-            int idx=0;
-            for (PlantPhoto p:mPlant.plantPhotos) {
+            mPhotoListActivityIntentExtra=getIntent().getParcelableExtra("photoListActivityIntentExtra");
+             int idx=0;
+            for (PlantPhoto p:mPhotoListActivityIntentExtra.getPlantPhotos()) {
                 if (!p.isDeleted()){
                     PhotoListElement photoListElement = new PhotoListElement(idx,p);
                     mPhotos.add(photoListElement);
@@ -236,7 +235,7 @@ public class PhotoListActivity extends AppCompatActivity implements
     private void setPlantProperties() {
         Log.d(TAG, "setPlantProperties: 1");
         //nytfelt-detail
-        mViewTitle.setText(mPlant.plant.getTitle());
+        mViewTitle.setText(mPhotoListActivityIntentExtra.getTitle());
     }
     private void setContentInteraction() {
         if (mPhotoListActivityIntentExtra.isEditMode()){
@@ -252,7 +251,8 @@ public class PhotoListActivity extends AppCompatActivity implements
     private void returnPlantPhotos() {
         // Put the String to pass back into an Intent and close this activity
         Intent intent = new Intent();
-        intent.putExtra("updated_plant", mPlant);
+        Log.d(TAG, "returnPlantPhotos: mPhotoListActivityIntentExtra: "+mPhotoListActivityIntentExtra.toString());
+        intent.putExtra("photoListActivityIntentExtra", mPhotoListActivityIntentExtra);
         setResult(RESULT_OK, intent);
     }
 

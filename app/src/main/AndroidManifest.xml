@@ -78,6 +78,13 @@
                     android:scheme="com.susarne.ihave2" />
             </intent-filter>
         </activity>
+        <service
+            android:name="com.susarne.ihave2.services.FirebaseMessageService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+            </intent-filter>
+        </service>
 
         <provider
             android:name="androidx.core.content.FileProvider"

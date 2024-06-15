@@ -119,17 +119,17 @@
         app:layout_constraintTop_toBottomOf="@+id/email"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/register"
+        app:layout_constraintBottom_toTopOf="@id/send_confirm_mail"
         app:layout_constraintVertical_bias="0.2" />
 
     <Button
-        android:id="@+id/register"
+        android:id="@+id/send_confirm_mail"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="start"
         android:layout_marginBottom="0dp"
         android:enabled="false"
-        android:text="@string/action_register"
+        android:text="@string/action_send_confirm_mail"
         app:layout_constraintTop_toBottomOf="@+id/login"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -144,7 +144,7 @@
         android:layout_marginBottom="0dp"
         android:enabled="false"
         android:text="@string/action_select_login"
-        app:layout_constraintTop_toBottomOf="@+id/register"
+        app:layout_constraintTop_toBottomOf="@+id/send_confirm_mail"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toTopOf="@id/select_register"
@@ -186,7 +186,7 @@
         android:layout_gravity="start"
         android:layout_marginBottom="16dp"
         android:enabled="true"
-        android:text="ver 1.3"
+        android:text="ver 1.4"
         android:textColor="@color/black"
         app:layout_constraintEnd_toEndOf="parent"
 

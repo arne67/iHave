@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class PlantWithLists implements Parcelable{
+public class PlantWithLists {
     @Embedded
     public Plant plant;
 
@@ -41,28 +41,28 @@ public class PlantWithLists implements Parcelable{
 
 
 
-    public static final Creator<PlantWithLists> CREATOR = new Creator<PlantWithLists>() {
-        @Override
-        public PlantWithLists createFromParcel(Parcel in) {
-            return new PlantWithLists(in);
-        }
-
-        @Override
-        public PlantWithLists[] newArray(int size) {
-            return new PlantWithLists[size];
-        }
-    };
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel parcel, int i) {
-        parcel.writeParcelable(plant, i);
-        parcel.writeTypedList(plantPhotos);
-    }
+//    public static final Creator<PlantWithLists> CREATOR = new Creator<PlantWithLists>() {
+//        @Override
+//        public PlantWithLists createFromParcel(Parcel in) {
+//            return new PlantWithLists(in);
+//        }
+//
+//        @Override
+//        public PlantWithLists[] newArray(int size) {
+//            return new PlantWithLists[size];
+//        }
+//    };
+//
+//    @Override
+//    public int describeContents() {
+//        return 0;
+//    }
+//
+//    @Override
+//    public void writeToParcel(Parcel parcel, int i) {
+//        parcel.writeParcelable(plant, i);
+//        parcel.writeTypedList(plantPhotos);
+//    }
 
     @Override
     public boolean equals(Object o) {

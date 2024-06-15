@@ -67,6 +67,12 @@ public class Utility {
         Context context=ContextSingleton.getContekst();
         return context.getResources().getString(R.string.ihaveCloudBaseUrl);
     }
+
+    public static String getCloudImageFolder(){
+        Context context=ContextSingleton.getContekst();
+        return context.getResources().getString(R.string.ihaveCloudImageFolder);
+    }
+
     public static String getUuid(){
         UUID uuid = UUID.randomUUID();
 

@@ -9,6 +9,7 @@ import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
 
 
 import android.content.Intent;
@@ -34,6 +35,7 @@ import com.google.android.material.textfield.TextInputLayout;
 
 import java.io.File;
 import java.util.Collections;
+import java.util.List;
 
 public class PlantActivity extends AppCompatActivity implements
         View.OnClickListener {
@@ -89,7 +91,7 @@ public class PlantActivity extends AppCompatActivity implements
         mPlantRepository = new PlantRepository(this);
 
         getIncomingIntent();
-        setPlantProperties();
+
         disableContentInteraction();
         setListeners();
         Log.d(TAG, "onCreate: 999");
@@ -144,11 +146,9 @@ public class PlantActivity extends AppCompatActivity implements
                         if (result.getResultCode() == RESULT_OK) {
                             Log.d(TAG, "onActivityResult: arny 3");
                             speed(TAG, 302);
-                            mInitialPlant = result.getData().getParcelableExtra("updated_plant");
+                            String plantId = result.getData().getStringExtra("updated_plantId");
+                            getPlant(plantId);
                             speed(TAG, 303);
-                            setPlantProperties();
-                            speed(TAG, 304);
-
                         }
 
                     }
@@ -213,10 +213,24 @@ public class PlantActivity extends AppCompatActivity implements
 
     private void getIncomingIntent() {
         Log.d(TAG, "getIncomingIntent: 1");
-        if (getIntent().hasExtra("selected_plant")) {
+        if (getIntent().hasExtra("selected_plantId")) {
             Log.d(TAG, "getIncomingIntent: 2");
-            mInitialPlant = getIntent().getParcelableExtra("selected_plant");
+            String plantId = getIntent().getStringExtra("selected_plantId");
+            Log.d(TAG, "getIncomingIntent: plantId: "+plantId);
+            getPlant(plantId);
+
         }
+    }
+
+    private void getPlant(String plantId) {
+        mPlantRepository.retrievePlantById(plantId).observe(this, new Observer<PlantWithLists>() {
+            @Override
+            public void onChanged(PlantWithLists plant) {
+                mInitialPlant = plant;
+                setPlantProperties();
+
+            }
+        });
     }
 
 
@@ -307,7 +321,7 @@ public class PlantActivity extends AppCompatActivity implements
     private void editPlant() {
         Log.d(TAG, "editPlant: ");
         Intent intent = new Intent(this, PlantEditActivity.class);
-        intent.putExtra("selected_plant", mInitialPlant);
+        intent.putExtra("selected_plantId", mInitialPlant.plant.getPlantId());
         Log.d(TAG, "editPlant: mMainPhotoName: " + mMainPhotoName);
         activityResultLauncher.launch(intent);
     }
@@ -315,9 +329,11 @@ public class PlantActivity extends AppCompatActivity implements
     private void startPhotoList() {
         Intent intent = new Intent(this, PhotoListActivity.class);
         PhotoListActivityIntentExtra photoListActivityIntentExtra=new PhotoListActivityIntentExtra();
-        photoListActivityIntentExtra.setPlantWithLists(mInitialPlant);
+        photoListActivityIntentExtra.setTitle(mInitialPlant.plant.getTitle());
+        photoListActivityIntentExtra.setMainPhotoName(mInitialPlant.plant.getMainPhotoName());
+        photoListActivityIntentExtra.setPlantPhotos(mInitialPlant.plantPhotos);
         photoListActivityIntentExtra.setEditMode(false);
-        intent.putExtra("selected_plant", photoListActivityIntentExtra);
+        intent.putExtra("photoListActivityIntentExtra", photoListActivityIntentExtra);
         activityResultLauncher.launch(intent);
     }
 

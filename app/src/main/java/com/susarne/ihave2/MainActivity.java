@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.work.OneTimeWorkRequest;
+import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
 import android.app.Activity;
@@ -24,16 +25,19 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.api.LogDescriptor;
 import com.google.api.services.drive.model.User;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
@@ -47,6 +51,7 @@ import com.susarne.ihave2.models.TokenRefreshRequestDto;
 import com.susarne.ihave2.models.TokenStrings;
 import com.susarne.ihave2.models.test.PostItem;
 import com.susarne.ihave2.persistence.PlantRepository;
+import com.susarne.ihave2.services.FirebaseMessageService;
 import com.susarne.ihave2.util.Token;
 import com.susarne.ihave2.util.CurrentUser;
 import com.susarne.ihave2.workers.BackupWorker;
@@ -56,6 +61,7 @@ import com.susarne.ihave2.workers.RecoverWorker;
 
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.material.chip.Chip;
+import com.susarne.ihave2.workers.SystemStartWorker;
 
 import net.openid.appauth.AuthState;
 import net.openid.appauth.AuthorizationException;
@@ -63,10 +69,13 @@ import net.openid.appauth.AuthorizationResponse;
 import net.openid.appauth.AuthorizationService;
 import net.openid.appauth.TokenResponse;
 
+import java.io.File;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import retrofit2.Call;
@@ -78,6 +87,7 @@ public class MainActivity extends AppCompatActivity implements
         View.OnClickListener {
 
     private static final String TAG = "MainActivity";
+    private static final String APP_TAG = "MyCustomApp";
 
 
     //UI components
@@ -115,28 +125,35 @@ public class MainActivity extends AppCompatActivity implements
     private String mMasterKeyAlias;
     private final CompositeDisposable mDisposable = new CompositeDisposable();
     private WorkManager mWorkManager;
+    private static final String PERIODIC_GET_WORK_TAG = "PERIODIC_GET_WORK_TAG";
 
     private static final int RC_SIGN_IN = 9001;
 
     private GoogleSignInClient mGoogleSignInClient;
     private FirebaseAuth mAuth;
 
+
+
 // start of public methods ********************************************************************************
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.d(TAG, "onCreate: yy2");
+        Log.d(TAG, "..onCreate: yy2");
 
 
         super.onCreate(savedInstanceState);
         //ContextSingleton.getInstance(getApplicationContext());
         //getSuperHeroes();
         mAuth = FirebaseAuth.getInstance();
+        startSystemStartWorker();
+
+
+        //getNewUpdatedPlantsPeriodically();
         connectToUi();
-        getCallbackFromAuthPhoto();
-        getCallbackFromTokenRequestPhoto();
-        getCallbackFromAuthDrive();
-        getCallbackFromTokenRequestDrive();
+//        getCallbackFromAuthPhoto();
+//        getCallbackFromTokenRequestPhoto();
+//        getCallbackFromAuthDrive();
+//        getCallbackFromTokenRequestDrive();
         mPlantRepository = new PlantRepository(this);
         //mPlantRepository.deleteAllPlants();
         setUiListeners();
@@ -152,7 +169,7 @@ public class MainActivity extends AppCompatActivity implements
         //mAuthorizationServicePhoto = Token.startOAuthAuthentication(mScopesPhoto, mOAuthActivityResultLauncherPhoto, this);
         //starttestgoogleoauth();
 
-
+/*
         mTokenStringsPhoto = new TokenStrings();
         mTokenStringsPhoto.setAccessTokenString(Token.getAccessToken(ACCESS_TOKEN_PHOTO));
         //refreshtoken udløber efter 7 dage i teststatus. Herefter bliver vi nødt til
@@ -194,38 +211,33 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
-    private void getNewAccessTokenPhoto() {
-        TokenRefreshRequestDto tokenRefreshRequestDto = new TokenRefreshRequestDto();
 
-        tokenRefreshRequestDto.setClient_id(Token.getClientId(this));
-        tokenRefreshRequestDto.setGrant_type("refresh_token");
-        tokenRefreshRequestDto.setRefresh_token(Token.getRefreshToken(REFRESH_TOKEN_PHOTO));
-        Call<TokenRefreshDto> call = TokenApiClient.getInstance().getMyApi().refreshToken(tokenRefreshRequestDto);
-        call.enqueue(new Callback<TokenRefreshDto>() {
-            @Override
-            public void onResponse(Call<TokenRefreshDto> call, Response<TokenRefreshDto> response) {
-                Log.d(TAG, "onResponse: getnewaccesstoken ok svar");
-                //Log.d(TAG, "onResponse: 1" + response.body().getAccessToken());
-                //Log.d(TAG, "onResponse: 1" + response.body().toString());
-                if (response.isSuccessful()) {
-                    Log.d(TAG, "onResponse: accesstoken: "+response.body().getAccess_token());
-                    Token.putAccessToken(response.body().getAccess_token(),ACCESS_TOKEN_PHOTO);
-                } else {
-                    Log.d(TAG, "onResponse: startoa:"+response.code());
-                    mAuthorizationServicePhoto =Token.startOAuthAuthentication(mScopesPhoto, mOAuthActivityResultLauncherPhoto, getApplicationContext());
-                }
-                //Log.d(TAG, "onResponse: 1"+response.body().getBaseUrl());
-            }
 
-            @Override
-            public void onFailure(Call<TokenRefreshDto> call, Throwable t) {
-                Log.d(TAG, "onFailure: getmediaitem 1");
-                Toast.makeText(getApplicationContext(), "An error has occured", Toast.LENGTH_LONG).show();
-                //startOAuthAuthentication();
-            }
-
-        });
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.d(TAG, "..onStart: ");
     }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.d(TAG, "..onStop: ");
+        WorkManager.getInstance(this).cancelAllWorkByTag(PERIODIC_GET_WORK_TAG);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.d(TAG, "..onDestroy: ");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.d(TAG, "..onPause: ");
+    }
+
 
     private void getNewAccessTokenDrive() {
         Log.d(TAG, "getNewAccessTokenDrive: ");
@@ -301,7 +313,7 @@ public class MainActivity extends AppCompatActivity implements
     public void onPlantClick(int position) {
         Log.d(TAG, "onPlantClick: " + position);
         Intent intent = new Intent(this, PlantActivity.class);
-        intent.putExtra("selected_plant", mPlants.get(position));
+        intent.putExtra("selected_plantId", mPlants.get(position).plant.getPlantId());
         startActivity(intent);
     }
 
@@ -355,6 +367,10 @@ public class MainActivity extends AppCompatActivity implements
                 String likestring = "%" + s + "%";
                 Log.d(TAG, "onQueryTextChange: " + likestring);
                 retrievePlantsWithTitle(likestring);
+                if (s.equals("sannehack")){
+                    Log.d(TAG, "onQueryTextChange: sannehack");
+                    enableTestMenu(menu);
+                }
                 return false;
             }
         });
@@ -397,6 +413,11 @@ public class MainActivity extends AppCompatActivity implements
                         createFirebaseUser();
                         break;
                     }
+                    case R.id.create_firebase_token:{
+                        Log.d(TAG, "onMenuItemClick: create_firebase_user");
+                        createFirebaseToken();
+                        break;
+                    }
                     case R.id.action_search:{
                         Log.d(TAG, "onMenuItemClick: searchbar");
                         break;
@@ -411,6 +432,17 @@ public class MainActivity extends AppCompatActivity implements
 
         return true;
     }
+
+    private void enableTestMenu(Menu menu) {
+        menu.findItem(R.id.reset_login).setVisible(true);
+        menu.findItem(R.id.backup_copy).setVisible(true);
+        menu.findItem(R.id.recover_copy).setVisible(true);
+        menu.findItem(R.id.get_new_updated_plants).setVisible(true);
+        menu.findItem(R.id.delete_all_plants).setVisible(true);
+        menu.findItem(R.id.get_user_plants).setVisible(true);
+        menu.findItem(R.id.create_firebase_token).setVisible(true);
+        menu.findItem(R.id.action_search).setVisible(true);
+   }
 
     private void createFirebaseUser() {
         mAuth.createUserWithEmailAndPassword("kofoedspost@hotmail.com", "mak987x")
@@ -431,6 +463,10 @@ public class MainActivity extends AppCompatActivity implements
                 });
     }
 
+    private void createFirebaseToken() {
+        FirebaseMessageService messagingService = new FirebaseMessageService();
+        messagingService.fetchTokenManually();
+    }
     private void sendConfirmEmail(FirebaseUser user) {
         user.sendEmailVerification();
     }
@@ -439,10 +475,36 @@ public class MainActivity extends AppCompatActivity implements
         Runnable runnable = new Runnable() {
             public void run() {
                 mPlantRepository.deleteAllPlants();
+                deleteAllImages();
+                mPlantRepository.deleteSystem();
+
             }
         };
         Thread thread = new Thread(runnable);
         thread.start();
+
+    }
+
+    private void deleteAllImages() {
+        File directory = new File(getApplicationContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES), APP_TAG);
+        if (directory.exists() && directory.isDirectory()) {
+            // Få alle filer i mappen
+            File[] files = directory.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    if (file.isFile()) {
+                        // Slet filen
+                        Log.d(TAG, "deleteAllImages: file.getName: "+file.getName());
+                        boolean deleted=true;
+                        deleted = file.delete();
+                        if (!deleted) {
+                            // Håndter hvis filen ikke kunne slettes
+                            System.out.println("Kunne ikke slette filen: " + file.getAbsolutePath());
+                        }
+                    }
+                }
+            }
+        }
 
     }
 
@@ -452,6 +514,17 @@ public class MainActivity extends AppCompatActivity implements
                 new OneTimeWorkRequest.Builder(GetUpdatedPlantWorker.class)
                         .build();
         mWorkManager.enqueue(getPlantRequest);
+
+    }
+
+    private void getNewUpdatedPlantsPeriodically() {
+        Log.d(TAG, "..on getNewUpdatedPlantsPeriodically: ");
+        mWorkManager = WorkManager.getInstance(getApplication());
+        PeriodicWorkRequest periodicWorkRequest =
+                new PeriodicWorkRequest.Builder(GetUpdatedPlantWorker.class, 30, TimeUnit.MINUTES)
+                        .addTag(PERIODIC_GET_WORK_TAG)
+                        .build();
+        mWorkManager.enqueue(periodicWorkRequest);
 
     }
 
@@ -625,8 +698,13 @@ public class MainActivity extends AppCompatActivity implements
         LocalDate currentdate = LocalDate.now();
         int month= currentdate.getMonthValue();
         Log.d(TAG, "filterPlantsFlowerNow: month"+month);
-        //TODO
-        // mPlants.removeIf(t -> !findPlantFlowerMonthByMonthNo(t.plantFlowerMonths,month));
+        Iterator<PlantWithLists> iterator = mPlants.iterator();
+        while (iterator.hasNext()) {
+            PlantWithLists currentPlant = iterator.next();
+            if (!currentPlant.plant.bloomsInCurrentMonth()) {
+                iterator.remove(); // Fjern elementet, hvis det opfylder kriteriet
+            }
+        }
         mPlantRecyclerAdapter.notifyDataSetChanged();
     }
 
@@ -673,6 +751,7 @@ public class MainActivity extends AppCompatActivity implements
     private void reset_login() {
          //mSharedPreferences.edit().remove(Constants.IHAVE_USER_NAME).apply();
         CurrentUser.deleteAccessToken();
+        mAuth.signOut();
     }
 
     private void startGetPlantWorker() {
@@ -680,6 +759,16 @@ public class MainActivity extends AppCompatActivity implements
         mWorkManager = WorkManager.getInstance(getApplication());
         OneTimeWorkRequest getPlantsRequest =
                 new OneTimeWorkRequest.Builder(GetPlantWorker.class)
+                        .build();
+        mWorkManager.enqueue(getPlantsRequest);
+
+    }
+
+    private void startSystemStartWorker() {
+        WorkManager mWorkManager;
+        mWorkManager = WorkManager.getInstance(getApplication());
+        OneTimeWorkRequest getPlantsRequest =
+                new OneTimeWorkRequest.Builder(SystemStartWorker.class)
                         .build();
         mWorkManager.enqueue(getPlantsRequest);
 

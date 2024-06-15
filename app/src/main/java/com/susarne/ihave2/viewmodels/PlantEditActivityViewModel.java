@@ -171,6 +171,7 @@ public class PlantEditActivityViewModel extends ViewModel {
 
     private void updatePlant() {
         if (plantIsChanged()) {
+            Log.d(TAG, "updatePlant: vi opdaterer planten");
             editedPlant.plant.setSyncedWithCloud(false);
             mPlantRepository.updatePlant(editedPlant.plant);
         }

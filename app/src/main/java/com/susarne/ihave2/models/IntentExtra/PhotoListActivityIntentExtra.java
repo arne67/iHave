@@ -3,7 +3,12 @@ package com.susarne.ihave2.models.IntentExtra;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import androidx.annotation.NonNull;
+
+import com.susarne.ihave2.models.PlantPhoto;
 import com.susarne.ihave2.models.PlantWithLists;
+
+import java.util.List;
 
 
 public class PhotoListActivityIntentExtra implements Parcelable {
@@ -11,38 +16,26 @@ public class PhotoListActivityIntentExtra implements Parcelable {
 //#nytfelt
 
     // unik id for photo på tværs af users
-    private PlantWithLists plantWithLists;
+    private List<PlantPhoto> plantPhotos;
     private boolean editMode;
+    String title;
+    String mainPhotoName;
 
 
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeParcelable(this.plantWithLists, flags);
-        dest.writeByte(this.editMode ? (byte) 1 : (byte) 0);
-    }
-
-    public void readFromParcel(Parcel source) {
-        this.plantWithLists = source.readParcelable(PlantWithLists.class.getClassLoader());
-        this.editMode = source.readByte() != 0;
+    public PhotoListActivityIntentExtra(Parcel in) {
+        plantPhotos = in.createTypedArrayList(PlantPhoto.CREATOR);
+        editMode = in.readByte() != 0;
+        mainPhotoName = in.readString();
+        title = in.readString();
     }
 
     public PhotoListActivityIntentExtra() {
     }
 
-    protected PhotoListActivityIntentExtra(Parcel in) {
-        this.plantWithLists = in.readParcelable(PlantWithLists.class.getClassLoader());
-        this.editMode = in.readByte() != 0;
-    }
-
-    public static final Parcelable.Creator<PhotoListActivityIntentExtra> CREATOR = new Parcelable.Creator<PhotoListActivityIntentExtra>() {
+    public static final Creator<PhotoListActivityIntentExtra> CREATOR = new Creator<PhotoListActivityIntentExtra>() {
         @Override
-        public PhotoListActivityIntentExtra createFromParcel(Parcel source) {
-            return new PhotoListActivityIntentExtra(source);
+        public PhotoListActivityIntentExtra createFromParcel(Parcel in) {
+            return new PhotoListActivityIntentExtra(in);
         }
 
         @Override
@@ -51,12 +44,35 @@ public class PhotoListActivityIntentExtra implements Parcelable {
         }
     };
 
-    public PlantWithLists getPlantWithLists() {
-        return plantWithLists;
+    @Override
+    public int describeContents() {
+        return 0;
     }
 
-    public void setPlantWithLists(PlantWithLists plantWithLists) {
-        this.plantWithLists = plantWithLists;
+    @Override
+    public void writeToParcel(@NonNull Parcel parcel, int i) {
+        parcel.writeTypedList(plantPhotos);
+        parcel.writeByte((byte) (editMode ? 1 : 0));
+        parcel.writeString(mainPhotoName);
+        parcel.writeString(title);
+    }
+
+    @Override
+    public String toString() {
+        return "PhotoListActivityIntentExtra{" +
+                "plantPhotos=" + plantPhotos +
+                ", editMode=" + editMode +
+                ", title='" + title + '\'' +
+                ", mainPhotoName='" + mainPhotoName + '\'' +
+                '}';
+    }
+
+    public List<PlantPhoto> getPlantPhotos() {
+        return plantPhotos;
+    }
+
+    public void setPlantPhotos(List<PlantPhoto> plantPhotos) {
+        this.plantPhotos = plantPhotos;
     }
 
     public boolean isEditMode() {
@@ -65,5 +81,21 @@ public class PhotoListActivityIntentExtra implements Parcelable {
 
     public void setEditMode(boolean editMode) {
         this.editMode = editMode;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getMainPhotoName() {
+        return mainPhotoName;
+    }
+
+    public void setMainPhotoName(String mainPhotoName) {
+        this.mainPhotoName = mainPhotoName;
     }
 }

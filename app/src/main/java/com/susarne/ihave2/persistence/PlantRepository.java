@@ -135,6 +135,13 @@ public class PlantRepository {
 
     }
 
+    public void insertPlantSync(Plant plant){
+        Log.d(TAG, "insertPlant: ");
+        Log.d(TAG, "insertPlant: plant.toSstring"+plant.toString());
+        mPlantDatabase.getPlantDao().insertPlant(plant);
+
+    }
+
     public void insertPlantPhoto(PlantPhoto plantPhoto){
         Log.d(TAG, "insertPlantPhoto: ");
         Completable.fromAction(() -> mPlantDatabase.getPlantDao().insertPlantPhoto(plantPhoto))
@@ -219,6 +226,10 @@ public class PlantRepository {
     public void deleteAllPlants() {
         mPlantDatabase.getPlantDao().deleteAllPlantPhotos();
         mPlantDatabase.getPlantDao().deleteAllPlants();
+    }
+
+    public void deleteSystem() {
+        mPlantDatabase.getPlantDao().deleteSystem();
     }
 
     public void upsertPlantsWithsLists(List<PlantWithLists> plantsWithLists, System system) {

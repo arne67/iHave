@@ -7,6 +7,8 @@ import static com.susarne.ihave2.util.SharedPreferences.initiateSharedPreference
 import android.content.SharedPreferences;
 import android.util.Log;
 
+import com.google.firebase.auth.FirebaseAuth;
+
 public class CurrentUser {
     private static final String TAG = "currentUser";
     private static SharedPreferences mSharedPreferences;
@@ -35,9 +37,10 @@ public class CurrentUser {
     }
 
     public static String getUserId(){
-        SharedPreferences sharedPreferences;
-        mSharedPreferences=initiateSharedPreferences();
-        return mSharedPreferences.getString(Constants.IHAVE_USER_ID,"");
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();;
+        String userId=firebaseAuth.getCurrentUser().getUid();
+        return userId;
+        //return mSharedPreferences.getString(Constants.IHAVE_USER_ID,"");
     }
 
     public static void putUserId(String userId){

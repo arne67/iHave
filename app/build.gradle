@@ -10,7 +10,7 @@ android {
         applicationId "com.susarne.ihave2"
         minSdk 29
         targetSdk 34
-        versionCode 4
+        versionCode 6
         versionName "1.0"
 
         manifestPlaceholders = [
@@ -48,7 +48,7 @@ android {
             shrinkResources true
 
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            resValue "string", "app_namex", "iHave 1.2"
+            resValue "string", "app_namex", "iHave 1.4"
             resValue "string", "file_provider", "com.susarne.ihave2.fileprovider"
             "com.susarne.ihave2.fileprovider"
 
@@ -60,7 +60,7 @@ android {
                 resValue "string", "googlePhotoFolderName", releaseProperties.getProperty('googlePhotoFolderName')
                 resValue "string", "googleDriveFolderName", releaseProperties.getProperty('googleDriveFolderName')
                 resValue "string", "oauthScheme", releaseProperties.getProperty('oauthScheme')
-
+                resValue "string", "ihaveCloudImageFolder", releaseProperties.getProperty('ihaveCloudImageFolder')
             }
             // Indlæs variabler fra release-private.properties
             def releasePrivatePropertiesFile = rootProject.file('release-private.properties')
@@ -72,6 +72,9 @@ android {
 
         }
         debug {
+            debug{
+                debuggable true
+            }
             manifestPlaceholders = [
                     appIcon: "@mipmap/ic_launcher_test",
                     appIconRound: "@mipmap/ic_launcher_test_round"]
@@ -88,6 +91,7 @@ android {
                 resValue "string", "googlePhotoFolderName", debugProperties.getProperty('googlePhotoFolderName')
                 resValue "string", "googleDriveFolderName", debugProperties.getProperty('googleDriveFolderName')
                 resValue "string", "oauthScheme", debugProperties.getProperty('oauthScheme')
+                resValue "string", "ihaveCloudImageFolder", debugProperties.getProperty('ihaveCloudImageFolder')
                 // Brug de indlæste variabler efter behov
             }
             // Indlæs variabler fra debug-private.properties
@@ -162,5 +166,9 @@ dependencies {
     implementation 'com.google.android.gms:play-services-auth:19.2.0'
     implementation 'com.google.firebase:firebase-storage:20.0.1'
     implementation 'com.google.firebase:firebase-auth:21.0.1'
+
+    implementation 'com.google.firebase:firebase-messaging:23.0.0'
+    implementation 'com.google.firebase:firebase-analytics:21.0.0'
+
 
 }

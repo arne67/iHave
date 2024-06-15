@@ -150,7 +150,8 @@ public abstract class PlantDao {
     public abstract int deleteAllPlantPhotos();
     @Query("DELETE FROM plants")
     public abstract int deleteAllPlants();
-
+    @Query("DELETE FROM system")
+    public abstract int deleteSystem();
 
     @Query("update system set lastGetUpdatedPlantsUntil=:lastGetUpdatedPlantsUntil where systemId=0")
     public abstract int setLastGetUpdatedPlantsUntil(String lastGetUpdatedPlantsUntil);
