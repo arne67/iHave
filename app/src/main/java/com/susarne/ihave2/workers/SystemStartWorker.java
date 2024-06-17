@@ -1,6 +1,7 @@
 package com.susarne.ihave2.workers;
 
 import android.content.Context;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.work.OneTimeWorkRequest;
@@ -14,6 +15,7 @@ import com.susarne.ihave2.persistence.PlantRepository;
 public class SystemStartWorker extends Worker {
     private static final String TAG = "SystemStartWorker";
     private PlantRepository mPlantRepository;
+    System mSystem;
 
     public SystemStartWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -23,9 +25,13 @@ public class SystemStartWorker extends Worker {
     @NonNull
     @Override
     public Result doWork() {
+        Log.d(TAG, "doWork: ");
         if (systemExist() == false) {
             createSystemSync();
             startGetPlantWorker();
+        } else
+            if (mSystem.getLastGetUpdatedPlantsUntil()==null) {
+                mPlantRepository.setLastGetUpdatedPlantsUntil("1900-01-01 00:00:00.000000");
         }
         return Result.success();
     }
@@ -33,8 +39,8 @@ public class SystemStartWorker extends Worker {
 
 
     private boolean systemExist() {
-        System system=mPlantRepository.retrieveSystemByIdSync(0);
-        if (system!=null) return true;
+        mSystem=mPlantRepository.retrieveSystemByIdSync(0);
+        if (mSystem!=null) return true;
         return false;
 
     }

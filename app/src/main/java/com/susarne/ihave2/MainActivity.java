@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.work.Data;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
@@ -61,6 +62,7 @@ import com.susarne.ihave2.workers.RecoverWorker;
 
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.material.chip.Chip;
+import com.susarne.ihave2.workers.SavePlantWorker;
 import com.susarne.ihave2.workers.SystemStartWorker;
 
 import net.openid.appauth.AuthState;
@@ -732,7 +734,13 @@ public class MainActivity extends AppCompatActivity implements
         //mPlantRepository.deletePlant(plant.plant);
         plant.plant.setDeleted(true);
         plant.plant.setSyncedWithCloud(false);
-        mPlantRepository.updatePlant(plant.plant);
+
+        mPlantRepository.update(plant.plant).observe(this, success -> {
+            if (Boolean.TRUE.equals(success)) {
+                startSavePlantWorker();
+            }
+        });
+
     }
 
     private final ItemTouchHelper.SimpleCallback itemTouchHelperCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
@@ -772,6 +780,15 @@ public class MainActivity extends AppCompatActivity implements
                         .build();
         mWorkManager.enqueue(getPlantsRequest);
 
+    }
+
+    private void startSavePlantWorker() {
+        // Add WorkRequest to Cleanup temporary images
+        mWorkManager = WorkManager.getInstance(getApplication());
+        OneTimeWorkRequest savePlantRequest =
+                new OneTimeWorkRequest.Builder(SavePlantWorker.class)
+                        .build();
+        mWorkManager.enqueue(savePlantRequest);
     }
 
 }

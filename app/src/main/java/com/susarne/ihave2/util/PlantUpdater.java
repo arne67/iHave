@@ -1,4 +1,4 @@
-package com.susarne.ihave2.workers;
+package com.susarne.ihave2.util;
 
 import static com.susarne.ihave2.util.Constants.ACCESS_TOKEN_PHOTO;
 import static com.susarne.ihave2.util.Constants.WORKER_PLANT_ID;
@@ -19,17 +19,12 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.susarne.ihave2.api.PlantApiClient;
 import com.susarne.ihave2.models.GetUpdatedPlantsDto;
-import com.susarne.ihave2.models.GooglePhotos.MediaItem;
 import com.susarne.ihave2.models.Plant;
 import com.susarne.ihave2.models.PlantPhoto;
 import com.susarne.ihave2.models.PlantWithLists;
 import com.susarne.ihave2.models.PlantWithListsDto;
 import com.susarne.ihave2.models.System;
 import com.susarne.ihave2.persistence.PlantRepository;
-import com.susarne.ihave2.util.ContextSingleton;
-import com.susarne.ihave2.util.GooglePhoto;
-import com.susarne.ihave2.util.PlantUpdater;
-import com.susarne.ihave2.util.Token;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,8 +33,8 @@ import retrofit2.Call;
 import retrofit2.Response;
 
 
-public class GetUpdatedPlantWorker extends Worker {
-    private static final String TAG = "GetUpdatedPlantWorker";
+public class PlantUpdater {
+    private static final String TAG = "PlantUpdater";
     private static final String APP_TAG = "MyCustomApp";
     private PlantRepository mPlantRepository;
     private boolean mSucces;
@@ -51,31 +46,20 @@ public class GetUpdatedPlantWorker extends Worker {
 
     private StorageReference mStorageRef;
 
-    public GetUpdatedPlantWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
-        super(context, workerParams);
-        mPlantRepository = new PlantRepository(context);
-    }
-
-    @NonNull
-    @Override
-    public Result doWork() {
-        Log.d(TAG, "..on GetUpdatedPlant.. doWork: ");
-        PlantUpdater plantUpdater = new PlantUpdater();
-        plantUpdater.getUpdatedPlants();
-        return Result.success();
-    }
 
 
-    public Result xdoWork() {
-        Log.d(TAG, "..on GetUpdatedPlant.. doWork: ");
-        int workerPlantId = getInputData().getInt(WORKER_PLANT_ID, 0);
+
+    public void getUpdatedPlants() {
+        Log.d(TAG, "GetUpdatedPlants() 1: ");
+
         mContext = ContextSingleton.getContekst();
+        mPlantRepository = new PlantRepository(mContext);
         mAccessTokenString = Token.getAccessToken(ACCESS_TOKEN_PHOTO);
         mAuth = FirebaseAuth.getInstance();
         mStorageRef = FirebaseStorage.getInstance().getReference("uploads");
 
-        GooglePhoto.createPhotoDir(getApplicationContext());
-        Log.d(TAG, "doWork: getLastGetUpdatedPlantsUntil(): " + getLastGetUpdatedPlantsUntil());
+        GooglePhoto.createPhotoDir(mContext);
+        Log.d(TAG, "getUpdatedPlants: getLastGetUpdatedPlantsUntil(): " + getLastGetUpdatedPlantsUntil());
         GetUpdatedPlantsDto getUpdatedPlantsDto = getUpdatedPlants(getLastGetUpdatedPlantsUntil());
 
         if (getUpdatedPlantsDto != null) {
@@ -93,9 +77,8 @@ public class GetUpdatedPlantWorker extends Worker {
         mPlantRepository.setLastGetUpdatedPlantsUntil(getUpdatedPlantsDto.getUpdatedUntil());
 
 
-        return Result.success();
+        return;
     }
-
 
     private void upsertPlantPhoto(PlantPhoto plantPhoto) {
         plantPhoto.setCreatedInCloud(true);
@@ -177,7 +160,7 @@ public class GetUpdatedPlantWorker extends Worker {
     private void downloadImage(PlantPhoto plantPhoto) {
         Log.d(TAG, "downloadImage: plantphoto.getPhotoName(): "+plantPhoto.getPhotoName());
 
-        File mediaStorageDir = new File(getApplicationContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES), APP_TAG);
+        File mediaStorageDir = new File(mContext.getExternalFilesDir(Environment.DIRECTORY_PICTURES), APP_TAG);
         File localFile = new File(mediaStorageDir.getPath() + File.separator + plantPhoto.getPhotoName());
 
         StorageReference childStorageRef = mStorageRef.child("images/" + plantPhoto.getPhotoName());

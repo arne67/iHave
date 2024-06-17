@@ -77,7 +77,6 @@ public class SavePlantWorker extends Worker {
         mAuth = FirebaseAuth.getInstance();
         mStorageRef = FirebaseStorage.getInstance().getReference("uploads");
 
-        int workerPlantId = getInputData().getInt(WORKER_PLANT_ID, 0);
         sleep();
         mContext = ContextSingleton.getContekst();
         mAccessTokenString = Token.getAccessToken(ACCESS_TOKEN_PHOTO);
@@ -204,7 +203,7 @@ public class SavePlantWorker extends Worker {
         PlantDto plantDto = getPlantDto(plant);
         String token = "";
         Log.d(TAG, "uploadchangedPlant content: " + plantDto.getContent());
-        Call<PlantDto> call = PlantApiClient.getInstance().getMyApi().updatePlant(token, plantDto, plantDto.getCreatedBy(), plantDto.getPlantId());
+        Call<PlantDto> call = PlantApiClient.getInstance().getMyApi().updatePlant(token, plantDto, Utility.getUuid(), plantDto.getPlantId());
         try {
             Response<PlantDto> response = call.execute();
             if (response.isSuccessful()) {
@@ -282,7 +281,7 @@ public class SavePlantWorker extends Worker {
         mSucces = false;
         PlantPhotoDto plantPhotoDto = getPlantPhotoDto(plantPhoto);
         String token = "";
-        Call<PlantPhotoDto> call = PlantApiClient.getInstance().getMyApi().updatePlantPhoto(token, plantPhotoDto, plantPhotoDto.getCreatedBy(), plantPhotoDto.getPhotoId());
+        Call<PlantPhotoDto> call = PlantApiClient.getInstance().getMyApi().updatePlantPhoto(token, plantPhotoDto, Utility.getUuid(), plantPhotoDto.getPhotoId());
         try {
             Response<PlantPhotoDto> response = call.execute();
             if (response.isSuccessful()) {
@@ -388,25 +387,6 @@ public class SavePlantWorker extends Worker {
     }
 
 
-    private void getPlant(PlantWithLists plant) {
-        //her skal vi kalde retrofit for at uploade synkront
-        Call<PlantWithListsDto> call = PlantApiClient.getInstance().getMyApi().getPlant("1", "4");
-        try {
-            Response<PlantWithListsDto> response = call.execute();
-            if (response.isSuccessful()) {
-                // handle successful response
-                Log.d(TAG, "uploadPlant: " + response.body());
-                Log.d(TAG, "uploadPlant: " + response.body().getTitle());
-            } else {
-                // handle unsuccessful response
-                Log.d(TAG, "uploadPlant: notfound" + response.errorBody().toString());
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            Log.d(TAG, "uploadPlant: io-fejl");
-        }
-
-    }
 
     private PlantWithLists getPlant(String id) {
         PlantWithLists plantWithLists = mPlantRepository.retrievePlantByIdSync(id);

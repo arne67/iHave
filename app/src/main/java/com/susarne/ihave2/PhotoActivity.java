@@ -30,6 +30,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.exifinterface.media.ExifInterface;
 
+import com.bumptech.glide.Glide;
 import com.susarne.ihave2.models.IntentExtra.PhotoActivityIntentExtra;
 import com.susarne.ihave2.persistence.PlantRepository;
 
@@ -274,8 +275,11 @@ public class PhotoActivity extends AppCompatActivity implements
 
         File mediaStorageDir = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), APP_TAG);
         File imageFile = new File(mediaStorageDir.getPath() + File.separator + mPhotoActivityIntentExtra.getPhotoName());
-        Bitmap bitmap = BitmapFactory.decodeFile(imageFile.getAbsolutePath());
-        mMainPhoto.setImageBitmap(bitmap);
+//        Bitmap bitmap = BitmapFactory.decodeFile(imageFile.getAbsolutePath());
+//        mMainPhoto.setImageBitmap(bitmap);
+        Glide.with(getApplicationContext())
+                .load(imageFile.getAbsolutePath())
+                .into(mMainPhoto);
     }
 
     @Override

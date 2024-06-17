@@ -10,7 +10,7 @@ android {
         applicationId "com.susarne.ihave2"
         minSdk 29
         targetSdk 34
-        versionCode 6
+        versionCode 11
         versionName "1.0"
 
         manifestPlaceholders = [
@@ -48,7 +48,7 @@ android {
             shrinkResources true
 
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            resValue "string", "app_namex", "iHave 1.4"
+            resValue "string", "app_namex", "iHave 1.11"
             resValue "string", "file_provider", "com.susarne.ihave2.fileprovider"
             "com.susarne.ihave2.fileprovider"
 
@@ -117,6 +117,7 @@ android {
     buildFeatures {
         viewBinding true
     }
+    namespace 'com.susarne.ihave2'
 }
 
 dependencies {

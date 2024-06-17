@@ -10,6 +10,7 @@ import com.susarne.ihave2.api.PlantApiClient;
 import com.susarne.ihave2.models.AppTokenDto;
 import com.susarne.ihave2.models.PlantWithListsDto;
 import com.susarne.ihave2.util.CurrentUser;
+import com.susarne.ihave2.util.PlantUpdater;
 import com.susarne.ihave2.util.Worker;
 
 import java.io.IOException;
@@ -41,7 +42,9 @@ public class FirebaseMessageService extends FirebaseMessagingService {
             Log.d(TAG, "onMessageReceived: action"+action);
             if ("get_updated".equals(action)) {
                 Log.d(TAG, "onMessageReceived: vi henter");
-                Worker.getNewUpdatedPlants();
+                //Worker.getNewUpdatedPlants();
+                PlantUpdater plantUpdater = new PlantUpdater();
+                plantUpdater.getUpdatedPlants();
 
                 // Kode til at hente nye oplysninger fra serveren
             }

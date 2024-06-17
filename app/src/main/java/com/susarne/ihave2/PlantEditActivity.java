@@ -36,6 +36,7 @@ import androidx.core.content.FileProvider;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.susarne.ihave2.models.IntentExtra.PhotoListActivityIntentExtra;
 import com.susarne.ihave2.models.Plant;
@@ -367,11 +368,17 @@ public class PlantEditActivity extends AppCompatActivity implements
         Log.d(TAG, "showMainPhoto: " + mMainPhotoName);
         if (mMainPhotoName != null) {
             mImageFile = new File(mMediaStorageDir.getPath() + File.separator + mMainPhotoName);
-            Bitmap bitmap = BitmapFactory.decodeFile(mImageFile.getAbsolutePath());
-            mMainPhoto.setBackgroundResource(android.R.color.transparent);
-            Log.d(TAG, "showMainPhoto: bitmap: " + bitmap);
-            mMainPhoto.setImageBitmap(bitmap);
+//            Bitmap bitmap = BitmapFactory.decodeFile(mImageFile.getAbsolutePath());
+//            mMainPhoto.setBackgroundResource(android.R.color.transparent);
+//            Log.d(TAG, "showMainPhoto: bitmap: " + bitmap);
+//            mMainPhoto.setImageBitmap(bitmap);
+            mMainPhoto.setBackgroundResource(0);
+            Glide.with(getApplicationContext())
+                    .load(mImageFile.getAbsolutePath())
+                    .into(mMainPhoto);
+
             mMainPhotoButton.setText("Skift billede");
+
         } else {
             mMainPhoto.setBackgroundResource(R.drawable.ic_baseline_no_photography_24);
             mMainPhoto.setImageBitmap(null);

@@ -28,6 +28,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 
+import com.bumptech.glide.Glide;
 import com.susarne.ihave2.models.IntentExtra.PhotoListActivityIntentExtra;
 import com.susarne.ihave2.models.PlantWithLists;
 import com.susarne.ihave2.persistence.PlantRepository;
@@ -301,9 +302,13 @@ public class PlantActivity extends AppCompatActivity implements
         mMediaStorageDir = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), APP_TAG);
         if (mMainPhotoName != null) {
             mImageFile = new File(mMediaStorageDir.getPath() + File.separator + mInitialPlant.plant.getMainPhotoName());
-            Bitmap bitmap = BitmapFactory.decodeFile(mImageFile.getAbsolutePath());
-            mMainPhoto.setBackgroundResource(android.R.color.transparent);
-            mMainPhoto.setImageBitmap(bitmap);
+            //+Bitmap bitmap = BitmapFactory.decodeFile(mImageFile.getAbsolutePath());
+            mMainPhoto.setBackgroundResource(0);
+            Glide.with(getApplicationContext())
+                    .load(mImageFile.getAbsolutePath())
+                    .into(mMainPhoto);
+            //mMainPhoto.setBackgroundResource(android.R.color.transparent);
+            //mMainPhoto.setImageBitmap(bitmap);
         } else {
             mMainPhoto.setBackgroundResource(R.drawable.ic_baseline_no_photography_24);
             mMainPhoto.setImageBitmap(null);

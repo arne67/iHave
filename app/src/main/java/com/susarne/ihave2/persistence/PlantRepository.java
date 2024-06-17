@@ -5,6 +5,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
 import com.susarne.ihave2.models.Plant;
 import com.susarne.ihave2.models.PlantPhoto;
@@ -12,6 +13,8 @@ import com.susarne.ihave2.models.PlantWithLists;
 import com.susarne.ihave2.models.System;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Completable;
@@ -21,11 +24,13 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 public class PlantRepository {
     private static final String TAG = "PlantRepository";
     private final PlantDatabase mPlantDatabase;
+    private ExecutorService executorService;
 
     // Plant
     public PlantRepository(Context context) {
         Log.d(TAG, "PlantRepository: ");
         mPlantDatabase = PlantDatabase.getInstance(context);
+        executorService = Executors.newSingleThreadExecutor();
     }
 
     public List<String> getAllTableNames() {
@@ -206,7 +211,9 @@ public class PlantRepository {
                     @Override
                     public void onComplete() {
                         Log.d(TAG, "onComplete:plant ");
+
                     }
+
 
                     @Override
                     public void onError(@NonNull Throwable e) {
@@ -216,6 +223,19 @@ public class PlantRepository {
                     }
                 });
 
+    }
+
+    public LiveData<Boolean> update(Plant plant) {
+        MutableLiveData<Boolean> updateResult = new MutableLiveData<>();
+        executorService.execute(() -> {
+            try {
+                mPlantDatabase.getPlantDao().updatePlant(plant);
+                updateResult.postValue(true); // Opdatering lykkedes
+            } catch (Exception e) {
+                updateResult.postValue(false); // Opdatering mislykkedes
+            }
+        });
+        return updateResult;
     }
 
 
