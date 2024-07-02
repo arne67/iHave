@@ -19,16 +19,8 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import com.susarne.ihave2.api.PlantApiClient;
-import com.susarne.ihave2.models.GetUserRespondDto;
-import com.susarne.ihave2.models.GooglePhotos.Album;
-import com.susarne.ihave2.models.GooglePhotos.AlbumsCreateRequestBody;
-import com.susarne.ihave2.models.GooglePhotos.BatchCreateRequestBody;
-import com.susarne.ihave2.models.GooglePhotos.BatchCreateRespondBody;
+import com.susarne.ihave2.app.MyApplication;
 import com.susarne.ihave2.models.GooglePhotos.MediaItem;
-import com.susarne.ihave2.models.GooglePhotos.NewMediaItem;
-import com.susarne.ihave2.models.GooglePhotos.NewMediaItemResult;
-import com.susarne.ihave2.models.GooglePhotos.SimpleMediaItem;
-import com.susarne.ihave2.models.AppTokenDto;
 import com.susarne.ihave2.models.Plant;
 import com.susarne.ihave2.models.PlantDto;
 import com.susarne.ihave2.models.PlantPhoto;
@@ -36,20 +28,14 @@ import com.susarne.ihave2.models.PlantPhotoDto;
 import com.susarne.ihave2.models.PlantWithLists;
 import com.susarne.ihave2.models.PlantWithListsDto;
 import com.susarne.ihave2.persistence.PlantRepository;
-import com.susarne.ihave2.util.ContextSingleton;
 import com.susarne.ihave2.util.Token;
 import com.susarne.ihave2.util.CurrentUser;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.susarne.ihave2.util.Utility;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
-import okhttp3.MediaType;
-import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Response;
 
@@ -78,7 +64,7 @@ public class SavePlantWorker extends Worker {
         mStorageRef = FirebaseStorage.getInstance().getReference("uploads");
 
         sleep();
-        mContext = ContextSingleton.getContekst();
+        mContext = MyApplication.getAppContext();
         mAccessTokenString = Token.getAccessToken(ACCESS_TOKEN_PHOTO);
 
         int idx = 1;
@@ -203,7 +189,7 @@ public class SavePlantWorker extends Worker {
         PlantDto plantDto = getPlantDto(plant);
         String token = "";
         Log.d(TAG, "uploadchangedPlant content: " + plantDto.getContent());
-        Call<PlantDto> call = PlantApiClient.getInstance().getMyApi().updatePlant(token, plantDto, Utility.getUuid(), plantDto.getPlantId());
+        Call<PlantDto> call = PlantApiClient.getInstance().getMyApi().updatePlant(token, plantDto, mAuth.getCurrentUser().getUid(), plantDto.getPlantId());
         try {
             Response<PlantDto> response = call.execute();
             if (response.isSuccessful()) {
@@ -281,7 +267,7 @@ public class SavePlantWorker extends Worker {
         mSucces = false;
         PlantPhotoDto plantPhotoDto = getPlantPhotoDto(plantPhoto);
         String token = "";
-        Call<PlantPhotoDto> call = PlantApiClient.getInstance().getMyApi().updatePlantPhoto(token, plantPhotoDto, Utility.getUuid(), plantPhotoDto.getPhotoId());
+        Call<PlantPhotoDto> call = PlantApiClient.getInstance().getMyApi().updatePlantPhoto(token, plantPhotoDto, mAuth.getCurrentUser().getUid(), plantPhotoDto.getPhotoId());
         try {
             Response<PlantPhotoDto> response = call.execute();
             if (response.isSuccessful()) {

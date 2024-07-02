@@ -34,7 +34,6 @@ import com.susarne.ihave2.MainActivity;
 import com.susarne.ihave2.R;
 import com.susarne.ihave2.persistence.PlantRepository;
 import com.susarne.ihave2.databinding.ActivityLoginBinding;
-import com.susarne.ihave2.util.ContextSingleton;
 import com.susarne.ihave2.util.CurrentUser;
 
 public class LoginActivity extends AppCompatActivity {
@@ -67,7 +66,6 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ContextSingleton.getInstance(getApplicationContext());
 
         mPlantRepository = new PlantRepository(this);
 

@@ -10,6 +10,7 @@
 
 
     <application
+        android:name=".app.MyApplication"
         android:allowBackup="false"
         android:fullBackupContent="false"
         android:icon="${appIcon}"

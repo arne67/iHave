@@ -15,10 +15,10 @@ import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
 
+import com.susarne.ihave2.app.MyApplication;
 import com.susarne.ihave2.models.PlantPhoto;
 import com.susarne.ihave2.models.PlantWithLists;
 import com.susarne.ihave2.persistence.PlantRepository;
-import com.susarne.ihave2.util.ContextSingleton;
 import com.susarne.ihave2.util.Utility;
 import com.susarne.ihave2.workers.SavePlantWorker;
 
@@ -43,10 +43,15 @@ public class PlantEditActivityViewModel extends ViewModel {
 
 
     public void initiate(Application application) {
+        Log.d(TAG, "initiate: a1");
         Context context;
+        Log.d(TAG, "initiate: a2");
         mWorkManager = WorkManager.getInstance(application);
-        context= ContextSingleton.getContekst();
+        Log.d(TAG, "initiate: a3");
+        context= MyApplication.getAppContext();
+        Log.d(TAG, "initiate: a4");
         mPlantRepository = new PlantRepository(context);
+        Log.d(TAG, "initiate: a5");
     }
 
     public void setPlantId(String plantId) {

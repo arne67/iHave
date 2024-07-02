@@ -18,15 +18,14 @@ import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.susarne.ihave2.api.PlantApiClient;
+import com.susarne.ihave2.app.MyApplication;
 import com.susarne.ihave2.models.GetUpdatedPlantsDto;
-import com.susarne.ihave2.models.GooglePhotos.MediaItem;
 import com.susarne.ihave2.models.Plant;
 import com.susarne.ihave2.models.PlantPhoto;
 import com.susarne.ihave2.models.PlantWithLists;
 import com.susarne.ihave2.models.PlantWithListsDto;
 import com.susarne.ihave2.models.System;
 import com.susarne.ihave2.persistence.PlantRepository;
-import com.susarne.ihave2.util.ContextSingleton;
 import com.susarne.ihave2.util.GooglePhoto;
 import com.susarne.ihave2.util.PlantUpdater;
 import com.susarne.ihave2.util.Token;
@@ -68,8 +67,8 @@ public class GetUpdatedPlantWorker extends Worker {
 
     public Result xdoWork() {
         Log.d(TAG, "..on GetUpdatedPlant.. doWork: ");
-        int workerPlantId = getInputData().getInt(WORKER_PLANT_ID, 0);
-        mContext = ContextSingleton.getContekst();
+        //int workerPlantId = getInputData().getInt(WORKER_PLANT_ID, 0);
+        mContext = MyApplication.getAppContext();
         mAccessTokenString = Token.getAccessToken(ACCESS_TOKEN_PHOTO);
         mAuth = FirebaseAuth.getInstance();
         mStorageRef = FirebaseStorage.getInstance().getReference("uploads");

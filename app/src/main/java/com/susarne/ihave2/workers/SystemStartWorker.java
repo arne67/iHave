@@ -29,10 +29,17 @@ public class SystemStartWorker extends Worker {
         if (systemExist() == false) {
             createSystemSync();
             startGetPlantWorker();
-        } else
+        } else {
             if (mSystem.getLastGetUpdatedPlantsUntil()==null) {
                 mPlantRepository.setLastGetUpdatedPlantsUntil("1900-01-01 00:00:00.000000");
+            }
+            getNewUpdatedPlants();
         }
+        if (mSystem.getLastGetUpdatedTaxonsUntil()==null) {
+            mPlantRepository.setLastGetUpdatedTaxonsUntil("1900-01-01 00:00:00.000000");
+        }
+        getNewUpdatedTaxons();
+
         return Result.success();
     }
 
@@ -62,5 +69,22 @@ public class SystemStartWorker extends Worker {
         mWorkManager.enqueue(getPlantsRequest);
 
     }
+
+    private void getNewUpdatedPlants() {
+        WorkManager mWorkManager = WorkManager.getInstance(getApplicationContext());
+        OneTimeWorkRequest getPlantRequest =
+                new OneTimeWorkRequest.Builder(GetUpdatedPlantWorker.class)
+                        .build();
+        mWorkManager.enqueue(getPlantRequest);
+    }
+
+    private void getNewUpdatedTaxons() {
+        WorkManager mWorkManager = WorkManager.getInstance(getApplicationContext());
+        OneTimeWorkRequest getTaxonRequest =
+                new OneTimeWorkRequest.Builder(GetTaxonWorker.class)
+                        .build();
+        mWorkManager.enqueue(getTaxonRequest);
+    }
+
 
 }

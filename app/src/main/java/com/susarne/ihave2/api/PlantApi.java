@@ -5,7 +5,6 @@ import androidx.annotation.Keep;
 
 import com.susarne.ihave2.data.model.LoggedInUser;
 import com.susarne.ihave2.models.AppTokenDto;
-import com.susarne.ihave2.models.EntirePlantsDto;
 import com.susarne.ihave2.models.GetUpdatedPlantsDto;
 import com.susarne.ihave2.models.GetUserRespondDto;
 import com.susarne.ihave2.models.LoginRequestDto;
@@ -15,6 +14,7 @@ import com.susarne.ihave2.models.PlantPhotoDto;
 import com.susarne.ihave2.models.PlantWithListsDto;
 import com.susarne.ihave2.models.PlantsWithListsDto;
 import com.susarne.ihave2.models.RegisterRequestDto;
+import com.susarne.ihave2.models.GetUpdatedTaxonsDto;
 import com.susarne.ihave2.util.Utility;
 
 import retrofit2.Call;
@@ -32,6 +32,8 @@ public interface PlantApi {
     //String BASE_URL = "https://susarne.dk/have/api/";
     //@GET("kategori")
     String BASE_URL = Utility.getIhaveCloudBaseUrl();
+
+
 
     @GET("plants/{userId}/{plantId}")
     Call<PlantWithListsDto> getPlant(@Path("userId") String userId, @Path("plantId") String plantId);
@@ -92,6 +94,10 @@ public interface PlantApi {
 
     @GET("users/{userId}")
     Call<GetUserRespondDto> getUser(@Path("userId") String userId);
+
+
+    @GET("taxons/updates/{lastGetUpdatedTaxonsUntil}")
+    Call<GetUpdatedTaxonsDto> getUpdatedTaxons(@Path("lastGetUpdatedTaxonsUntil") String lastGetUpdatedTaxonsUntil);
 
 
     //Call<List<Results>> getsuperHeroes(@Header("Authorization") String token);

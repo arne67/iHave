@@ -14,6 +14,7 @@ public class System {
     //Tidspunkt (fra cloud) for hvilket tidspunkt vi fået opdateringer hentet ned for andre brugere (til og med)
     private String lastGetUpdatedPlantsUntil;
 
+    private String lastGetUpdatedTaxonsUntil;
 
     public int getSystemId() {
         return systemId;
@@ -45,6 +46,14 @@ public class System {
 
     public void setLastGetUpdatedPlantsUntil(String lastGetUpdatedPlantsUntil) {
         this.lastGetUpdatedPlantsUntil = lastGetUpdatedPlantsUntil;
+    }
+
+    public String getLastGetUpdatedTaxonsUntil() {
+        return lastGetUpdatedTaxonsUntil;
+    }
+
+    public void setLastGetUpdatedTaxonsUntil(String lastGetUpdatedTaxonsUntil) {
+        this.lastGetUpdatedTaxonsUntil = lastGetUpdatedTaxonsUntil;
     }
 
     public System() {

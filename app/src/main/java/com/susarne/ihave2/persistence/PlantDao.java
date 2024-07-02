@@ -15,6 +15,7 @@ import com.susarne.ihave2.models.Plant;
 import com.susarne.ihave2.models.PlantPhoto;
 import com.susarne.ihave2.models.PlantWithLists;
 import com.susarne.ihave2.models.System;
+import com.susarne.ihave2.models.Taxon;
 
 import java.util.List;
 
@@ -77,6 +78,11 @@ public abstract class PlantDao {
     @Transaction
     @Query("SELECT * FROM plants where deleted=0 and title like :s order by plantId")
     public abstract LiveData<List<PlantWithLists>> getPlantsWithTitle(String s);
+
+
+    @Transaction
+    @Query("SELECT danskNavn FROM Taxon where taxonRang=:taxonRang and danskNavn like :danskNavn order by danskNavn")
+    public abstract LiveData<List<String>> getTaxonsWithName(String taxonRang,String danskNavn);
 
     @Transaction
     @Query("SELECT * FROM plants where deleted=0 and length(title) = 3")
@@ -155,5 +161,11 @@ public abstract class PlantDao {
 
     @Query("update system set lastGetUpdatedPlantsUntil=:lastGetUpdatedPlantsUntil where systemId=0")
     public abstract int setLastGetUpdatedPlantsUntil(String lastGetUpdatedPlantsUntil);
+
+    @Query("update system set lastGetUpdatedTaxonsUntil=:lastGetUpdatedTaxonsUntil where systemId=0")
+    public abstract int setLastGetUpdatedTaxonsUntil(String lastGetUpdatedTaxonsUntil);
+
+    @Upsert
+    public abstract void upsertTaxon(Taxon taxon);
 
 }

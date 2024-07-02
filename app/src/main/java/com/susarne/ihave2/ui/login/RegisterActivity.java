@@ -9,7 +9,6 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
@@ -33,7 +32,6 @@ import com.susarne.ihave2.MainActivity;
 import com.susarne.ihave2.R;
 import com.susarne.ihave2.databinding.ActivityRegisterBinding;
 import com.susarne.ihave2.persistence.PlantRepository;
-import com.susarne.ihave2.util.ContextSingleton;
 import com.susarne.ihave2.util.CurrentUser;
 
 public class RegisterActivity extends AppCompatActivity {
@@ -64,7 +62,6 @@ public class RegisterActivity extends AppCompatActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ContextSingleton.getInstance(getApplicationContext());
 
         mPlantRepository = new PlantRepository(this);
 

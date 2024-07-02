@@ -4,6 +4,7 @@ package com.susarne.ihave2.util;
 import android.content.Context;
 
 import com.susarne.ihave2.R;
+import com.susarne.ihave2.app.MyApplication;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -64,12 +65,12 @@ public class Utility {
         }
     }
     public static String getIhaveCloudBaseUrl(){
-        Context context=ContextSingleton.getContekst();
+        Context context= MyApplication.getAppContext();
         return context.getResources().getString(R.string.ihaveCloudBaseUrl);
     }
 
     public static String getCloudImageFolder(){
-        Context context=ContextSingleton.getContekst();
+        Context context=MyApplication.getAppContext();
         return context.getResources().getString(R.string.ihaveCloudImageFolder);
     }
 

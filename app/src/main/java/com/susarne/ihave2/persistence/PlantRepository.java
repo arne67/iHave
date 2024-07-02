@@ -11,6 +11,7 @@ import com.susarne.ihave2.models.Plant;
 import com.susarne.ihave2.models.PlantPhoto;
 import com.susarne.ihave2.models.PlantWithLists;
 import com.susarne.ihave2.models.System;
+import com.susarne.ihave2.models.Taxon;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -89,7 +90,9 @@ public class PlantRepository {
         return mPlantDatabase.getPlantDao().getPlantsWithTitle(s);
     }
 
-
+    public LiveData<List<String>> getTaxonsNames(String taxonRang, String danskNavn){
+        return mPlantDatabase.getPlantDao().getTaxonsWithName(taxonRang,danskNavn);
+    }
 
 
 
@@ -270,6 +273,14 @@ public class PlantRepository {
 
     public void setLastGetUpdatedPlantsUntil(String lastGetUpdatedPlantsUntil){
         mPlantDatabase.getPlantDao().setLastGetUpdatedPlantsUntil(lastGetUpdatedPlantsUntil);
+    }
+
+    public void setLastGetUpdatedTaxonsUntil(String lastGetUpdatedTaxonsUntil){
+        mPlantDatabase.getPlantDao().setLastGetUpdatedTaxonsUntil(lastGetUpdatedTaxonsUntil);
+    }
+
+    public void upsertTaxon(Taxon taxon) {
+        mPlantDatabase.getPlantDao().upsertTaxon(taxon);
     }
 
 

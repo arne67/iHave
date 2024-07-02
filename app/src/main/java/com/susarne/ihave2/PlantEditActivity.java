@@ -11,6 +11,8 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -38,10 +40,12 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
+import com.susarne.ihave2.adapters.PlanteNavnArrayAdapter;
 import com.susarne.ihave2.models.IntentExtra.PhotoListActivityIntentExtra;
 import com.susarne.ihave2.models.Plant;
 import com.susarne.ihave2.models.PlantPhoto;
 import com.susarne.ihave2.models.PlantWithLists;
+import com.susarne.ihave2.models.Taxon;
 import com.susarne.ihave2.persistence.PlantRepository;
 import com.susarne.ihave2.util.CurrentUser;
 import com.susarne.ihave2.util.Utility;
@@ -55,6 +59,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import retrofit2.Call;
@@ -75,7 +81,7 @@ public class PlantEditActivity extends AppCompatActivity implements
 
     // ui component
     //nytfelt-detail
-    private TextInputLayout mPlantTitle, mPlantText;
+    private TextInputLayout mPlantText;
     private TextView mViewTitle;
     private RelativeLayout mCheckContainer, mBackArrowContainer;
     private ImageButton mCheck, mBackArrow;
@@ -88,7 +94,7 @@ public class PlantEditActivity extends AppCompatActivity implements
     private ImageButton mTestButton;
     private ImageButton mEditButton;
     private final CheckBox[] mCheckBoxFlower = new CheckBox[12];
-    private AutoCompleteTextView mCategoryMenu;
+    private AutoCompleteTextView mPlantTitle,mCategoryMenu;
     //private TextView mPlantId;
 
     // representing UI component
@@ -115,6 +121,11 @@ public class PlantEditActivity extends AppCompatActivity implements
 
     private FirebaseAuth mAuth;
 
+    private PlanteNavnArrayAdapter mAdapter;
+
+    private List<String> mSpecies = new ArrayList<>();
+
+
 // start of public methods ********************************************************************************
 
 
@@ -124,6 +135,7 @@ public class PlantEditActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         //createAlbum();
         mAuth = FirebaseAuth.getInstance();
+        mPlantRepository = new PlantRepository(this);
         speed(TAG, 1);
         //restoreState();
         if (mAccessTokenString != null) {
@@ -138,6 +150,7 @@ public class PlantEditActivity extends AppCompatActivity implements
         mViewModel.initiate(getApplication());
         speed(TAG, 5);
         connectToViewElements();
+        getSpecies();
         speed(TAG, 6);
 
 
@@ -150,7 +163,7 @@ public class PlantEditActivity extends AppCompatActivity implements
         //getCallbackFromTokenRequest();
 
         speed(TAG, 9);
-        mPlantRepository = new PlantRepository(this);
+
 
 
         speed(TAG, 10);
@@ -196,6 +209,23 @@ public class PlantEditActivity extends AppCompatActivity implements
         //uploadMedia();
         //addToAlbum("CAISiQMAoe355Vc0Yu/DopIBXbBqi0fESgw/dy7rYeoct520qlzPq7U3TYMef50P5JhG17qT7BcMx/2HX48DkSH/clgCqMPl8W9tXHW4OdA9Nv1pXnOXflJHpcXQC7kemS6kHkLHZaYetWMRCQ0aKHN3fjxib1EYtd8ZRLsGcqtMjyJSBPtQ16fuy5PrUhvxxX8AbCWxGEjnZ65IVU8Z99/65Rq1Ii1gHs+xrTDjANRga4XecdXnD56QVd1Px6mHAS6yU0TXvA/X/zttwkJehXfA34Eo5E/rjM1/MSD4ONUzOkEusWU1OFDnsLwIEbFe6D9YuHbXjm0oKDYjV7exMHp5r2LWwPjRkihSIKHlaqPFPIbuIe3w77oGHxp7nFWtDWHgXfuvgc1ET7B6aaSRkCf3G+BlJBtKrezKUCgwpmcMMc6ou5Q9tPXekxiVn0aAncddTCLEPILyiegNcRCd3RzWvOdBDt6goayAyetA6/UdMhz9cDzzovztO54pvIZtxBsA5wO4VpAV7Qwb1rk");
         //downloadImage();
+    }
+
+    private void getSpecies() {
+            mPlantRepository.getTaxonsNames("Art","%"+""+"%").observe(this, new Observer<List<String>>() {
+                @Override
+                public void onChanged(List<String> speciesNames) {
+                    mSpecies=speciesNames;
+//                    for (String n:speciesNames) {
+//                        Log.d(TAG, "onChanged: taxon.dansk navn: "+n);
+//
+//                    }
+                    mAdapter = new PlanteNavnArrayAdapter(getApplicationContext(),android.R.layout.simple_dropdown_item_1line, mSpecies);
+                    mPlantTitle.setThreshold(2);
+                    mPlantTitle.setAdapter(mAdapter);
+                    mAdapter.notifyDataSetChanged();
+                }
+            });
     }
 
     private void setUserId() {
@@ -251,7 +281,7 @@ public class PlantEditActivity extends AppCompatActivity implements
     private void copyViewToEditedPlant() {
 
         mEditedPlant.plant.setContent(mPlantText.getEditText().getText().toString());
-        mEditedPlant.plant.setTitle(mPlantTitle.getEditText().getText().toString());
+        mEditedPlant.plant.setTitle(mPlantTitle.getText().toString());
         String timestamp = Utility.getCurrentTimestamp();
         mEditedPlant.plant.setCreatedTime(timestamp);
         mEditedPlant.plant.setMainPhotoName(mMainPhotoName);
@@ -308,7 +338,7 @@ public class PlantEditActivity extends AppCompatActivity implements
         //nytfelt-detail
         speed(TAG, 101);
         mViewTitle.setText(mEditedPlant.plant.getTitle());
-        mPlantTitle.getEditText().setText(mEditedPlant.plant.getTitle());
+        mPlantTitle.setText(mEditedPlant.plant.getTitle());
         //mPlantId.setText(String.valueOf(mEditedPlant.plant.getPlantId()));
         mPlantText.getEditText().setText(mEditedPlant.plant.getContent());
 
@@ -611,7 +641,69 @@ public class PlantEditActivity extends AppCompatActivity implements
         mCategoryMenu = findViewById(R.id.autoCompleteCategory);
         mCategoryMenu.setFreezesText(false);
 
+//        mAdapter = new ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, mSpecies);
+//        mPlantTitle.setThreshold(1);
+//        mPlantTitle.setAdapter(mAdapter);
 
+        mPlantTitle.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                //updateAdapter(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+
+
+        });
+
+//        mAdapter = new PlanteNavnArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, new ArrayList<>());
+//        mPlantTitle.setThreshold(1);
+//        mPlantTitle.setAdapter(mAdapter);
+//
+//        mPlantTitle.addTextChangedListener(new TextWatcher() {
+//            @Override
+//            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+//            }
+//
+//            @Override
+//            public void onTextChanged(CharSequence s, int start, int before, int count) {
+//                updateAdapter(s.toString());
+//            }
+//
+//            @Override
+//            public void afterTextChanged(Editable s) {
+//            }
+//
+//
+//        });
+
+
+    }
+
+    private void updateAdapter(String input) {
+        Log.d(TAG, "updateAdapter: input: "+input);;
+        if (input.length() >= 2) {
+            mPlantRepository.getTaxonsNames("Art","%"+input + "%").observe(this, new Observer<List<String>>() {
+                @Override
+                public void onChanged(List<String> taxons) {
+                    for (String taxon:taxons
+                         ) {
+                        Log.d(TAG, "onChanged: taxon.dansk navn: "+taxon);
+
+                    }
+                    Log.d(TAG, "onChanged: her tilføjer vi "+input);
+                    mAdapter.clear();
+                    mAdapter.addAll(taxons.stream().collect(Collectors.toList()));
+                    //mAdapter.notifyDataSetChanged();
+                }
+            });
+        }
     }
 
     private void setListeners() {

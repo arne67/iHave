@@ -6,6 +6,8 @@ import android.util.Log;
 import androidx.security.crypto.EncryptedSharedPreferences;
 import androidx.security.crypto.MasterKeys;
 
+import com.susarne.ihave2.app.MyApplication;
+
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 
@@ -17,7 +19,7 @@ public class SharedPreferences {
 
     public static android.content.SharedPreferences initiateSharedPreferences(){
         Context context;
-        context= ContextSingleton.getContekst();
+        context= MyApplication.getAppContext();
         try {
             return EncryptedSharedPreferences.create(
                     "secret_shared_prefs2",

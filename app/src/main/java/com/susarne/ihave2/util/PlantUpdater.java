@@ -18,6 +18,7 @@ import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.susarne.ihave2.api.PlantApiClient;
+import com.susarne.ihave2.app.MyApplication;
 import com.susarne.ihave2.models.GetUpdatedPlantsDto;
 import com.susarne.ihave2.models.Plant;
 import com.susarne.ihave2.models.PlantPhoto;
@@ -52,7 +53,7 @@ public class PlantUpdater {
     public void getUpdatedPlants() {
         Log.d(TAG, "GetUpdatedPlants() 1: ");
 
-        mContext = ContextSingleton.getContekst();
+        mContext = MyApplication.getAppContext();
         mPlantRepository = new PlantRepository(mContext);
         mAccessTokenString = Token.getAccessToken(ACCESS_TOKEN_PHOTO);
         mAuth = FirebaseAuth.getInstance();

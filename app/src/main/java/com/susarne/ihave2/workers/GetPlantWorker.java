@@ -6,7 +6,6 @@ import static com.susarne.ihave2.util.Constants.WORKER_PLANT_ID;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
 import android.util.Log;
@@ -22,7 +21,7 @@ import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.susarne.ihave2.api.PlantApiClient;
-import com.susarne.ihave2.models.GooglePhotos.MediaItem;
+import com.susarne.ihave2.app.MyApplication;
 import com.susarne.ihave2.models.Plant;
 
 import com.susarne.ihave2.models.PlantPhoto;
@@ -30,8 +29,6 @@ import com.susarne.ihave2.models.PlantWithLists;
 import com.susarne.ihave2.models.PlantWithListsDto;
 import com.susarne.ihave2.models.PlantsWithListsDto;
 import com.susarne.ihave2.persistence.PlantRepository;
-import com.susarne.ihave2.util.ContextSingleton;
-import com.susarne.ihave2.util.CurrentUser;
 import com.susarne.ihave2.util.GooglePhoto;
 import com.susarne.ihave2.util.Token;
 
@@ -40,7 +37,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 
 import retrofit2.Call;
 import retrofit2.Response;
@@ -70,7 +66,7 @@ public class GetPlantWorker extends Worker {
         mStorageRef = FirebaseStorage.getInstance().getReference("uploads");
 
         int workerPlantId = getInputData().getInt(WORKER_PLANT_ID, 0);
-        mContext = ContextSingleton.getContekst();
+        mContext = MyApplication.getAppContext();
         mAccessTokenString = Token.getAccessToken(ACCESS_TOKEN_PHOTO);
 
         if (getFirstPlant() == null) {

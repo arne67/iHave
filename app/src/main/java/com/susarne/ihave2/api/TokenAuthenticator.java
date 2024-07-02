@@ -6,8 +6,8 @@ import static com.susarne.ihave2.util.Constants.REFRESH_TOKEN_PHOTO;
 import android.content.Context;
 import android.util.Log;
 
+import com.susarne.ihave2.app.MyApplication;
 import com.susarne.ihave2.util.Token;
-import com.susarne.ihave2.util.ContextSingleton;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
@@ -43,7 +43,7 @@ public class TokenAuthenticator implements Authenticator {
     public String getNewAccessToken(String refreshToken) {
         OkHttpClient client = new OkHttpClient();
         Log.d(TAG, "getNewAccessToken: refreshToken "+refreshToken);
-        Context context=ContextSingleton.getContekst();
+        Context context= MyApplication.getAppContext();
         String clientId = Token.getClientId(context);
         RequestBody requestBody = new FormBody.Builder()
                 .add("client_id", clientId)
