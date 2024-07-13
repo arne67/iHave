@@ -2,6 +2,7 @@ package com.susarne.ihave2.util;
 
 
 import android.content.Context;
+import android.util.DisplayMetrics;
 
 import com.susarne.ihave2.R;
 import com.susarne.ihave2.app.MyApplication;
@@ -80,5 +81,11 @@ public class Utility {
         // Konverter UUID til en streng
         String uuidString = uuid.toString();
         return uuidString;
+    }
+
+    public static int convertDpToPixel(float dp) {
+        Context context=MyApplication.getAppContext();
+        DisplayMetrics metrics = context.getResources().getDisplayMetrics();
+        return (int) (dp * (metrics.densityDpi / 160f));
     }
 }

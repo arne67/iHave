@@ -12,6 +12,8 @@ import androidx.room.PrimaryKey;
 import java.util.Calendar;
 import java.util.Objects;
 
+import javax.annotation.Nullable;
+
 @Entity(tableName = "plants")
 public class Plant {
 //    public class Plant implements Parcelable {
@@ -26,6 +28,11 @@ public class Plant {
 
     @ColumnInfo(name = "title")
     private String title;
+
+    private String family;
+    private String taxonId;
+    private int heightFrom;
+    private int heightTo;
     @ColumnInfo(name = "content")
     private String content;
     @ColumnInfo(name = "timestamp")
@@ -55,36 +62,15 @@ public class Plant {
     private String createdAt;
 
 
-    public Plant(@NonNull String plantId, String createdBy, String title, String content, String createdTime, String mainPhotoName, int category, boolean createdInCloud, boolean deleted, boolean syncedWithCloud, boolean bloomsMonth1, boolean bloomsMonth2, boolean bloomsMonth3, boolean bloomsMonth4, boolean bloomsMonth5, boolean bloomsMonth6, boolean bloomsMonth7, boolean bloomsMonth8, boolean bloomsMonth9, boolean bloomsMonth10, boolean bloomsMonth11, boolean bloomsMonth12, String createdAt) {
-        this.plantId = plantId;
-        this.createdBy = createdBy;
-        this.title = title;
-        this.content = content;
-        this.createdTime = createdTime;
-        this.mainPhotoName = mainPhotoName;
-        this.category = category;
-        this.createdInCloud = createdInCloud;
-        this.deleted = deleted;
-        this.syncedWithCloud = syncedWithCloud;
-        this.bloomsMonth1 = bloomsMonth1;
-        this.bloomsMonth2 = bloomsMonth2;
-        this.bloomsMonth3 = bloomsMonth3;
-        this.bloomsMonth4 = bloomsMonth4;
-        this.bloomsMonth5 = bloomsMonth5;
-        this.bloomsMonth6 = bloomsMonth6;
-        this.bloomsMonth7 = bloomsMonth7;
-        this.bloomsMonth8 = bloomsMonth8;
-        this.bloomsMonth9 = bloomsMonth9;
-        this.bloomsMonth10 = bloomsMonth10;
-        this.bloomsMonth11 = bloomsMonth11;
-        this.bloomsMonth12 = bloomsMonth12;
-        this.createdAt = createdAt;
-    }
 
     public Plant(Plant other) {
         this.plantId = other.plantId;
         this.createdBy = other.createdBy;
         this.title = other.title;
+        this.family=other.family;
+        this.taxonId=other.taxonId;
+        this.heightFrom=other.heightFrom;
+        this.heightTo=other.heightTo;
         this.content = other.content;
         this.createdTime = other.createdTime;
         this.mainPhotoName = other.mainPhotoName;
@@ -107,9 +93,7 @@ public class Plant {
         this.createdAt = other.createdAt;
     }
 
-    @Ignore
     public Plant() {
-
     }
 
     public Plant(PlantDto other){
@@ -118,6 +102,10 @@ public class Plant {
         this.plantId = other.getPlantId();
         this.createdBy = other.getCreatedBy();
         this.title = other.getTitle();
+        this.family=other.getFamily();
+        this.taxonId=other.getTaxonId();
+        this.heightFrom=other.getHeightFrom();
+        this.heightTo=other.getHeightTo();
         this.content = other.getContent();
         this.createdTime = other.getCreatedTime();
         this.mainPhotoName = other.getMainPhotoName();
@@ -138,12 +126,14 @@ public class Plant {
         this.createdAt = other.getCreatedAt();
     }
 
-    public Plant(PlantWithListsDto other){
-        //this.createdInCloud = other.createdInCloud;
-        //this.syncedWithCloud = other.syncedWithCloud;
+    public Plant(PlantWithListsDto other) {
         this.plantId = other.getPlantId();
         this.createdBy = other.getCreatedBy();
         this.title = other.getTitle();
+        this.family=other.getFamily();
+        this.taxonId=other.getTaxonId();
+        this.heightFrom=other.getHeightFrom();
+        this.heightTo=other.getHeightTo();
         this.content = other.getContent();
         this.createdTime = other.getCreatedTime();
         this.mainPhotoName = other.getMainPhotoName();
@@ -187,6 +177,38 @@ public class Plant {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getFamily() {
+        return family;
+    }
+
+    public void setFamily(String family) {
+        this.family = family;
+    }
+
+    public String getTaxonId() {
+        return taxonId;
+    }
+
+    public void setTaxonId(String taxonId) {
+        this.taxonId = taxonId;
+    }
+
+    public int getHeightFrom() {
+        return heightFrom;
+    }
+
+    public void setHeightFrom(int heightFrom) {
+        this.heightFrom = heightFrom;
+    }
+
+    public int getHeightTo() {
+        return heightTo;
+    }
+
+    public void setHeightTo(int heightTo) {
+        this.heightTo = heightTo;
     }
 
     public String getContent() {
@@ -348,48 +370,6 @@ public class Plant {
         this.createdAt = createdAt;
     }
 
-    @Override
-    public String toString() {
-        return "Plant{" +
-                "plantId='" + plantId + '\'' +
-                ", userId=" + createdBy +
-                ", title='" + title + '\'' +
-                ", content='" + content + '\'' +
-                ", createdTime='" + createdTime + '\'' +
-                ", mainPhotoName='" + mainPhotoName + '\'' +
-                ", category=" + category +
-                ", createdInCloud=" + createdInCloud +
-                ", deleted=" + deleted +
-                ", syncedWithCloud=" + syncedWithCloud +
-                ", bloomsMonth1=" + bloomsMonth1 +
-                ", bloomsMonth2=" + bloomsMonth2 +
-                ", bloomsMonth3=" + bloomsMonth3 +
-                ", bloomsMonth4=" + bloomsMonth4 +
-                ", bloomsMonth5=" + bloomsMonth5 +
-                ", bloomsMonth6=" + bloomsMonth6 +
-                ", bloomsMonth7=" + bloomsMonth7 +
-                ", bloomsMonth8=" + bloomsMonth8 +
-                ", bloomsMonth9=" + bloomsMonth9 +
-                ", BloomsMonth10=" + bloomsMonth10 +
-                ", bloomsMonth11=" + bloomsMonth11 +
-                ", bloomsMonth12=" + bloomsMonth12 +
-                ", createdAt="+ createdAt +
-                '}';
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Plant plant = (Plant) o;
-        return category == plant.category && createdInCloud == plant.createdInCloud && deleted == plant.deleted && syncedWithCloud == plant.syncedWithCloud && bloomsMonth1 == plant.bloomsMonth1 && bloomsMonth2 == plant.bloomsMonth2 && bloomsMonth3 == plant.bloomsMonth3 && bloomsMonth4 == plant.bloomsMonth4 && bloomsMonth5 == plant.bloomsMonth5 && bloomsMonth6 == plant.bloomsMonth6 && bloomsMonth7 == plant.bloomsMonth7 && bloomsMonth8 == plant.bloomsMonth8 && bloomsMonth9 == plant.bloomsMonth9 && bloomsMonth10 == plant.bloomsMonth10 && bloomsMonth11 == plant.bloomsMonth11 && bloomsMonth12 == plant.bloomsMonth12 && plantId.equals(plant.plantId) && Objects.equals(createdBy, plant.createdBy) && Objects.equals(title, plant.title) && Objects.equals(content, plant.content) && Objects.equals(createdTime, plant.createdTime) && Objects.equals(mainPhotoName, plant.mainPhotoName) && Objects.equals(createdAt, plant.createdAt);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(plantId, createdBy, title, content, createdTime, mainPhotoName, category, createdInCloud, deleted, syncedWithCloud, bloomsMonth1, bloomsMonth2, bloomsMonth3, bloomsMonth4, bloomsMonth5, bloomsMonth6, bloomsMonth7, bloomsMonth8, bloomsMonth9, bloomsMonth10, bloomsMonth11, bloomsMonth12, createdAt);
-    }
-
     public boolean bloomsInCurrentMonth() {
         int currentMonth = Calendar.getInstance().get(Calendar.MONTH) + 1; // Kalender måned er 0-baseret
         switch (currentMonth) {
@@ -409,6 +389,49 @@ public class Plant {
         }
     }
 
+    @Override
+    public String toString() {
+        return "Plant{" +
+                "plantId='" + plantId + '\'' +
+                ", createdBy='" + createdBy + '\'' +
+                ", title='" + title + '\'' +
+                ", family='" + family + '\'' +
+                ", taxonId='" + taxonId + '\'' +
+                ", heightFrom=" + heightFrom +
+                ", heightTo=" + heightTo +
+                ", content='" + content + '\'' +
+                ", createdTime='" + createdTime + '\'' +
+                ", mainPhotoName='" + mainPhotoName + '\'' +
+                ", category=" + category +
+                ", createdInCloud=" + createdInCloud +
+                ", deleted=" + deleted +
+                ", syncedWithCloud=" + syncedWithCloud +
+                ", bloomsMonth1=" + bloomsMonth1 +
+                ", bloomsMonth2=" + bloomsMonth2 +
+                ", bloomsMonth3=" + bloomsMonth3 +
+                ", bloomsMonth4=" + bloomsMonth4 +
+                ", bloomsMonth5=" + bloomsMonth5 +
+                ", bloomsMonth6=" + bloomsMonth6 +
+                ", bloomsMonth7=" + bloomsMonth7 +
+                ", bloomsMonth8=" + bloomsMonth8 +
+                ", bloomsMonth9=" + bloomsMonth9 +
+                ", bloomsMonth10=" + bloomsMonth10 +
+                ", bloomsMonth11=" + bloomsMonth11 +
+                ", bloomsMonth12=" + bloomsMonth12 +
+                ", createdAt='" + createdAt + '\'' +
+                '}';
+    }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Plant plant = (Plant) o;
+        return heightFrom == plant.heightFrom && heightTo == plant.heightTo && category == plant.category && createdInCloud == plant.createdInCloud && deleted == plant.deleted && syncedWithCloud == plant.syncedWithCloud && bloomsMonth1 == plant.bloomsMonth1 && bloomsMonth2 == plant.bloomsMonth2 && bloomsMonth3 == plant.bloomsMonth3 && bloomsMonth4 == plant.bloomsMonth4 && bloomsMonth5 == plant.bloomsMonth5 && bloomsMonth6 == plant.bloomsMonth6 && bloomsMonth7 == plant.bloomsMonth7 && bloomsMonth8 == plant.bloomsMonth8 && bloomsMonth9 == plant.bloomsMonth9 && bloomsMonth10 == plant.bloomsMonth10 && bloomsMonth11 == plant.bloomsMonth11 && bloomsMonth12 == plant.bloomsMonth12 && Objects.equals(plantId, plant.plantId) && Objects.equals(createdBy, plant.createdBy) && Objects.equals(title, plant.title) && Objects.equals(family, plant.family) && Objects.equals(taxonId, plant.taxonId) && Objects.equals(content, plant.content) && Objects.equals(createdTime, plant.createdTime) && Objects.equals(mainPhotoName, plant.mainPhotoName) && Objects.equals(createdAt, plant.createdAt);
+    }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(plantId, createdBy, title, family, taxonId, heightFrom, heightTo, content, createdTime, mainPhotoName, category, createdInCloud, deleted, syncedWithCloud, bloomsMonth1, bloomsMonth2, bloomsMonth3, bloomsMonth4, bloomsMonth5, bloomsMonth6, bloomsMonth7, bloomsMonth8, bloomsMonth9, bloomsMonth10, bloomsMonth11, bloomsMonth12, createdAt);
+    }
 }

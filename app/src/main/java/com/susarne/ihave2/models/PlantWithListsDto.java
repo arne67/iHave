@@ -14,6 +14,10 @@ public class PlantWithListsDto {
     private String plantId;
     private String createdBy;
     private String title;
+    private String family;
+    private String taxonId;
+    private int heightFrom;
+    private int heightTo;
     private String content;
     private String createdTime;
     private String mainPhotoName;
@@ -91,6 +95,38 @@ public class PlantWithListsDto {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getFamily() {
+        return family;
+    }
+
+    public void setFamily(String family) {
+        this.family = family;
+    }
+
+    public String getTaxonId() {
+        return taxonId;
+    }
+
+    public void setTaxonId(String taxonId) {
+        this.taxonId = taxonId;
+    }
+
+    public int getHeightFrom() {
+        return heightFrom;
+    }
+
+    public void setHeightFrom(int heightFrom) {
+        this.heightFrom = heightFrom;
+    }
+
+    public int getHeightTo() {
+        return heightTo;
+    }
+
+    public void setHeightTo(int heightTo) {
+        this.heightTo = heightTo;
     }
 
     public String getContent() {

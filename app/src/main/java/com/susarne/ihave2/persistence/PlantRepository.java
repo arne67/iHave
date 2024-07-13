@@ -57,6 +57,10 @@ public class PlantRepository {
         return mPlantDatabase.getPlantDao().getPlant(id);
     }
 
+    public LiveData<Taxon> getTaxonById(String id){
+        return mPlantDatabase.getPlantDao().getTaxonById(id);
+    }
+
     public PlantWithLists retrievePlantByIdSync(String id){
         Log.d(TAG, "retrievePlantById: ");
         return mPlantDatabase.getPlantDao().getPlantSync(id);
@@ -284,4 +288,15 @@ public class PlantRepository {
     }
 
 
+    public LiveData<String> getFamilyForSpecies(String taxonId) {
+        return mPlantDatabase.getPlantDao().getFamilyForSpecies(taxonId);
+    }
+    public LiveData<Taxon> getTaxonWithName(String taxonRang,String danskNavn) {
+        return mPlantDatabase.getPlantDao().getTaxonWithName(taxonRang, danskNavn);
+    }
+
+    public LiveData<List<String>> getTaxonhierarchy(String taxonId) {
+        return mPlantDatabase.getPlantDao().getTaxonhierarchy(taxonId);
+    }
 }
+

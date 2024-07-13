@@ -8,11 +8,11 @@ import androidx.annotation.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
-public class PlanteNavnArrayAdapter extends ArrayAdapter<String> {
+public class NameArrayAdapter extends ArrayAdapter<String> {
     private List<String> items;
     private List<String> filteredItems;
 
-    public PlanteNavnArrayAdapter(Context context, int resource, List<String> items) {
+    public NameArrayAdapter(Context context, int resource, List<String> items) {
         super(context, resource);
         this.items = new ArrayList<>(items);  // Gem en kopi af de originale data
         this.filteredItems = new ArrayList<>(items);

@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
 Dette xml kan bruges direkte i activity_plant - ved at ændre følgende når det er kopieret
 .............................
 android:visibility="visible"
@@ -66,7 +65,6 @@ bør dog erstattes af javakode i PlantActivity så xml kan kopieres uden at skul
 
                 <TextView
                     android:id="@+id/main_photo_button"
-                    android:visibility="visible"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
@@ -74,45 +72,186 @@ bør dog erstattes af javakode i PlantActivity så xml kan kopieres uden at skul
                     android:textAllCaps="false"
                     android:textColor="@color/black"
                     android:textSize="22sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:visibility="visible" />
 
 
             </LinearLayout>
-<!--
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/plant_title"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            <!--
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/plant_title"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="11dp"
+                            android:layout_marginRight="11dp"
+                            android:hint="Navn">
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:layout_width="match_parent"
+                                android:enabled="true"
+                                android:textColor="@color/colorViewText"
+                                android:layout_height="wrap_content" />
+                        </com.google.android.material.textfield.TextInputLayout>
+            -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="11dp"
-                android:layout_marginRight="11dp"
-                android:hint="Navn">
-                <com.google.android.material.textfield.TextInputEditText
-                    android:layout_width="match_parent"
-                    android:enabled="true"
-                    android:textColor="@color/colorViewText"
-                    android:layout_height="wrap_content" />
-            </com.google.android.material.textfield.TextInputLayout>
--->
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/plante_navn_view"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="11dp"
-                android:layout_marginRight="11dp"
-                android:hint="Navn"
-                >
+                android:orientation="horizontal"
+                android:weightSum="100">
 
-                <AutoCompleteTextView
-                    android:id="@+id/plant_title"
-                    android:layout_width="match_parent"
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/plante_navn_view"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:enabled="true"/>
-                <!--android:inputType="none" />   -->
+                    android:layout_weight="85"
+
+                    android:hint="Navn">
+
+                    <AutoCompleteTextView
+                        android:id="@+id/plant_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:enabled="true" />
+                    <!--android:inputType="none" />   -->
 
 
-            </com.google.android.material.textfield.TextInputLayout>
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <ImageButton
+                    android:id="@+id/info_button"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="15"
+                    android:background="@color/white"
+                    android:src="@drawable/baseline_info_blue_24"
+                    android:visibility="visible" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="100">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/family_view"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="11dp"
+                    android:layout_weight="85"
+
+                    android:hint="Familie">
+
+                    <AutoCompleteTextView
+                        android:id="@+id/family"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:enabled="true" />
+                    <!--android:inputType="none" />   -->
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <ImageButton
+                    android:id="@+id/edit_family_button"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="15"
+                    android:background="@color/white"
+                    android:src="@drawable/ic_baseline_edit_24"
+                    android:visibility="visible" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="100">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/menu"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="11dp"
+                    android:layout_marginRight="11dp"
+                    android:layout_weight="85"
+                    android:hint="Kategori">
+
+                    <AutoCompleteTextView
+                        android:id="@+id/autoCompleteCategory"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:enabled="true"
+                        android:inputType="none"
+                        android:textColor="@color/colorViewText" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="100">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/height_from"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="11dp"
+                    android:layout_marginRight="11dp"
+                    android:layout_weight="47"
+                    android:hint="Højde i cm (fra)"
+                    android:saveEnabled="true">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:enabled="true"
+                        android:inputType="number"
+                        android:saveEnabled="true"
+                        android:textColor="@color/colorViewText" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="6"
+                    android:text="-"
+
+                    android:textAlignment="center"
+                    android:textAllCaps="false"
+                    android:textColor="@color/black"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:visibility="visible" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/height_to"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="11dp"
+                    android:layout_marginRight="11dp"
+                    android:layout_weight="47"
+                    android:hint="Højde i cm (til)"
+                    android:inputType="number"
+                    android:saveEnabled="true">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:enabled="true"
+                        android:inputType="number"
+                        android:saveEnabled="true"
+                        android:textColor="@color/colorViewText" />
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/plant_text"
@@ -123,34 +262,14 @@ bør dog erstattes af javakode i PlantActivity så xml kan kopieres uden at skul
                 android:layout_marginRight="11dp"
                 android:hint="Beskrivelse"
                 android:saveEnabled="true">
+
                 <com.google.android.material.textfield.TextInputEditText
                     android:layout_width="match_parent"
-                    android:enabled="true"
-                    android:textColor="@color/colorViewText"
-                    android:layout_height="wrap_content"
-                    android:saveEnabled="true" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/menu"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="11dp"
-                android:layout_marginRight="11dp"
-                android:hint="Kategori">
-
-                <AutoCompleteTextView
-                    android:id="@+id/autoCompleteCategory"
-                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:enabled="true"
-                    android:textColor="@color/colorViewText"
-                    android:inputType="none" />
-
+                    android:saveEnabled="true"
+                    android:textColor="@color/colorViewText" />
             </com.google.android.material.textfield.TextInputLayout>
-
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -184,122 +303,122 @@ bør dog erstattes af javakode i PlantActivity så xml kan kopieres uden at skul
                             android:id="@+id/checkbox_flower_01"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:enabled="true"
                             android:minWidth="0dp"
                             android:minHeight="0dp"
-                            android:enabled="true"
-                            android:textColor="@color/colorViewText"
-                            android:text="Januar" />
+                            android:text="Januar"
+                            android:textColor="@color/colorViewText" />
 
 
                         <CheckBox
                             android:id="@+id/checkbox_flower_02"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:enabled="true"
                             android:minWidth="0dp"
                             android:minHeight="0dp"
-                            android:enabled="true"
-                            android:textColor="@color/colorViewText"
-                            android:text="Februar" />
+                            android:text="Februar"
+                            android:textColor="@color/colorViewText" />
 
                         <CheckBox
                             android:id="@+id/checkbox_flower_03"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:enabled="true"
                             android:minWidth="0dp"
                             android:minHeight="0dp"
-                            android:enabled="true"
-                            android:textColor="@color/colorViewText"
-                            android:text="Marts" />
+                            android:text="Marts"
+                            android:textColor="@color/colorViewText" />
 
                         <CheckBox
                             android:id="@+id/checkbox_flower_04"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:enabled="true"
                             android:minWidth="0dp"
                             android:minHeight="0dp"
-                            android:enabled="true"
-                            android:textColor="@color/colorViewText"
-                            android:text="April" />
+                            android:text="April"
+                            android:textColor="@color/colorViewText" />
 
                         <CheckBox
                             android:id="@+id/checkbox_flower_05"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:enabled="true"
                             android:minWidth="0dp"
                             android:minHeight="0dp"
-                            android:enabled="true"
-                            android:textColor="@color/colorViewText"
-                            android:text="Maj" />
+                            android:text="Maj"
+                            android:textColor="@color/colorViewText" />
 
                         <CheckBox
                             android:id="@+id/checkbox_flower_06"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:enabled="true"
                             android:minWidth="0dp"
                             android:minHeight="0dp"
-                            android:enabled="true"
-                            android:textColor="@color/colorViewText"
-                            android:text="Juni" />
+                            android:text="Juni"
+                            android:textColor="@color/colorViewText" />
 
                         <CheckBox
                             android:id="@+id/checkbox_flower_07"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:enabled="true"
                             android:minWidth="0dp"
                             android:minHeight="0dp"
-                            android:enabled="true"
-                            android:textColor="@color/colorViewText"
-                            android:text="Juli" />
+                            android:text="Juli"
+                            android:textColor="@color/colorViewText" />
 
                         <CheckBox
                             android:id="@+id/checkbox_flower_08"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:enabled="true"
                             android:minWidth="0dp"
                             android:minHeight="0dp"
-                            android:enabled="true"
-                            android:textColor="@color/colorViewText"
-                            android:text="August" />
+                            android:text="August"
+                            android:textColor="@color/colorViewText" />
 
                         <CheckBox
                             android:id="@+id/checkbox_flower_09"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:enabled="true"
                             android:minWidth="0dp"
                             android:minHeight="0dp"
-                            android:enabled="true"
-                            android:textColor="@color/colorViewText"
-                            android:text="September" />
+                            android:text="September"
+                            android:textColor="@color/colorViewText" />
 
                         <CheckBox
                             android:id="@+id/checkbox_flower_10"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:enabled="true"
                             android:minWidth="0dp"
                             android:minHeight="0dp"
-                            android:enabled="true"
-                            android:textColor="@color/colorViewText"
-                            android:text="Oktober" />
+                            android:text="Oktober"
+                            android:textColor="@color/colorViewText" />
 
                         <CheckBox
                             android:id="@+id/checkbox_flower_11"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:enabled="true"
                             android:minWidth="0dp"
                             android:minHeight="0dp"
-                            android:enabled="true"
-                            android:textColor="@color/colorViewText"
-                            android:text="November" />
+                            android:text="November"
+                            android:textColor="@color/colorViewText" />
 
                         <CheckBox
                             android:id="@+id/checkbox_flower_12"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:enabled="true"
                             android:minWidth="0dp"
                             android:minHeight="0dp"
-                            android:enabled="true"
-                            android:textColor="@color/colorViewText"
-                            android:text="December" />
+                            android:text="December"
+                            android:textColor="@color/colorViewText" />
                     </GridLayout>
 
                 </LinearLayout>
@@ -322,49 +441,52 @@ bør dog erstattes af javakode i PlantActivity så xml kan kopieres uden at skul
                         android:id="@+id/collage"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
                         android:layout_gravity="center_horizontal"
                         android:background="@drawable/border_photos"
                         android:columnCount="2"
+                        android:orientation="horizontal"
                         android:rowCount="2">
 
                         <ImageView
                             android:id="@+id/multi_photo1"
-                            android:scaleType="centerCrop"
                             android:layout_width="90dp"
-                            android:layout_height="90dp"/>
-                        <ImageView
-                            android:id="@+id/multi_photo2"
-                            android:scaleType="centerCrop"
-                            android:layout_width="90dp"
-                            android:layout_height="90dp"/>
-                        <ImageView
-                            android:id="@+id/multi_photo3"
-                            android:scaleType="centerCrop"
-                            android:layout_width="90dp"
-                            android:layout_height="90dp"/>
-                        <RelativeLayout>
+                            android:layout_height="90dp"
+                            android:scaleType="centerCrop" />
 
                         <ImageView
-                            android:id="@+id/multi_photo4"
-                            android:scaleType="centerCrop"
+                            android:id="@+id/multi_photo2"
                             android:layout_width="90dp"
-                            android:layout_height="90dp"/>
+                            android:layout_height="90dp"
+                            android:scaleType="centerCrop" />
+
+                        <ImageView
+                            android:id="@+id/multi_photo3"
+                            android:layout_width="90dp"
+                            android:layout_height="90dp"
+                            android:scaleType="centerCrop" />
+
+                        <RelativeLayout>
+
+                            <ImageView
+                                android:id="@+id/multi_photo4"
+                                android:layout_width="90dp"
+                                android:layout_height="90dp"
+                                android:scaleType="centerCrop" />
+
                             <TextView
                                 android:id="@+id/photo_count"
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
+                                android:layout_alignLeft="@id/multi_photo4"
+                                android:layout_alignTop="@id/multi_photo4"
+                                android:layout_alignRight="@id/multi_photo4"
+                                android:layout_alignBottom="@id/multi_photo4"
                                 android:gravity="center_vertical|center_horizontal"
+                                android:text=""
                                 android:textColor="@color/black"
                                 android:textSize="22sp"
-                                android:textStyle="bold"
-                                android:text=""
-                                android:layout_alignTop="@id/multi_photo4"
-                                android:layout_alignBottom="@id/multi_photo4"
-                                android:layout_alignLeft="@id/multi_photo4"
-                                android:layout_alignRight="@id/multi_photo4"
-                                />
-                            
+                                android:textStyle="bold" />
+
                         </RelativeLayout>
 
                     </GridLayout>
@@ -378,8 +500,8 @@ bør dog erstattes af javakode i PlantActivity så xml kan kopieres uden at skul
                         android:textAllCaps="false"
                         android:textColor="@color/black"
                         android:textSize="22sp"
-                        android:visibility="visible"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        android:visibility="visible" />
 
                     <Space
                         android:layout_width="10dp"
@@ -392,8 +514,8 @@ bør dog erstattes af javakode i PlantActivity så xml kan kopieres uden at skul
                 android:id="@+id/test_button"
                 android:layout_width="140dp"
                 android:layout_height="140dp"
-                android:visibility="invisible"
-                android:src="@drawable/ic_baseline_no_photography_24" />
+                android:src="@drawable/ic_baseline_no_photography_24"
+                android:visibility="invisible" />
         </LinearLayout>
     </ScrollView>
 

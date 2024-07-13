@@ -10,6 +10,10 @@ public class PlantDto {
 
 
     private String title;
+    private String family;
+    private String taxonId;
+    private int heightFrom;
+    private int heightTo;
 
     private String content;
 
@@ -40,6 +44,10 @@ public class PlantDto {
         this.plantId = other.getPlantId();
         this.createdBy = other.getCreatedBy();
         this.title = other.getTitle();
+        this.family=other.getFamily();
+        this.taxonId=other.getTaxonId();
+        this.heightFrom=other.getHeightFrom();
+        this.heightTo=other.getHeightTo();
         this.content = other.getContent();
         this.createdTime = other.getCreatedTime();
         this.mainPhotoName = other.getMainPhotoName();
@@ -84,12 +92,44 @@ public class PlantDto {
         this.title = title;
     }
 
+    public String getFamily() {
+        return family;
+    }
+
+    public void setFamily(String family) {
+        this.family = family;
+    }
+
+    public String getTaxonId() {
+        return taxonId;
+    }
+
+    public void setTaxonId(String taxonId) {
+        this.taxonId = taxonId;
+    }
+
     public String getContent() {
         return content;
     }
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public int getHeightFrom() {
+        return heightFrom;
+    }
+
+    public void setHeightFrom(int heightFrom) {
+        this.heightFrom = heightFrom;
+    }
+
+    public int getHeightTo() {
+        return heightTo;
+    }
+
+    public void setHeightTo(int heightTo) {
+        this.heightTo = heightTo;
     }
 
     public String getCreatedTime() {

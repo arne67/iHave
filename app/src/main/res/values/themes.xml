@@ -14,4 +14,15 @@
     <style name="ToolbarTheme" parent="ThemeOverlay.AppCompat.Light">
         <item name="android:fontFamily">casual</item>
     </style>
+    <style name="TableTextViewStyle">
+
+        <item name="android:width">0dp</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="android:fontFamily">sans-serif-light</item>
+        <item name="android:padding">3dp</item>
+        <item name="android:background">@color/white</item>
+        <item name="android:layout_margin">1dp</item>
+    </style>
+
 </resources>

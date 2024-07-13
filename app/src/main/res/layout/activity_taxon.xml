@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".PlantEditActivity">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/plants_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:contentInsetEnd="0dp"
+            app:contentInsetStart="0dp">
+
+            <include layout="@layout/layout_plant_toolbar" />
+
+        </androidx.appcompat.widget.Toolbar>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/headerGreen"
+                android:text="Videnskabelig klassifikation" />
+
+
+            <!-- Gentag TableRow for hver række -->
+            <TableLayout
+                android:id="@+id/taxon_table"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="3dp"
+                android:background="@color/black">
+
+                <!-- Gentag TableRow for hver række -->
+                <TableRow
+                    android:background="@color/black">
+                    <TextView
+                        android:id="@+id/plant_domain_header"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="4"
+                        style="@style/TableTextViewStyle"
+                        android:text="Domæne" />
+                    <TextView
+                        android:id="@+id/plant_domain"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="6"
+                        style="@style/TableTextViewStyle"
+                        android:text="Eucaryota" />
+                </TableRow>
+                <TableRow
+                    android:background="@color/black">
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="4"
+                        style="@style/TableTextViewStyle"
+                        android:text="Rige" />
+                    <TextView
+                        android:id="@+id/plant_kingdom"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="6"
+                        style="@style/TableTextViewStyle"
+                        android:text="Plantea (Planter)" />
+                </TableRow>
+                <TableRow
+                    android:background="@color/black">
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="4"
+                        style="@style/TableTextViewStyle"
+                        android:text="Klasse" />
+                    <TextView
+                        android:id="@+id/plant_class"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="6"
+                        style="@style/TableTextViewStyle"
+                        android:text="Magnoliopsida (Tokimbladede)" />
+                </TableRow>
+
+            </TableLayout>
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>

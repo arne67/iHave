@@ -17,7 +17,7 @@ import com.susarne.ihave2.models.Taxon;
 import java.util.concurrent.Executors;
 
 //nytfelt - version
-@Database(entities = {Plant.class, PlantPhoto.class, System.class, Taxon.class},version = 18)
+@Database(entities = {Plant.class, PlantPhoto.class, System.class, Taxon.class},version = 21)
 
 public abstract class PlantDatabase extends RoomDatabase {
     public static final String DATABASE_NAME = "plants_db";
@@ -33,7 +33,7 @@ public abstract class PlantDatabase extends RoomDatabase {
                     DATABASE_NAME
             )
                     .fallbackToDestructiveMigrationFrom(8,9,10,11,12,13,14,15,16)
-                    .addMigrations(MIGRATION_17_18)
+                    .addMigrations(MIGRATION_17_18,MIGRATION_18_19,MIGRATION_19_20,MIGRATION_20_21)
                     //.setQueryCallback()
                     .setQueryCallback(((sqlQuery, bindArgs) ->
                             Log.d(TAG,"SQL QUERY: " + sqlQuery + ".... Args: " + bindArgs)), Executors.newSingleThreadExecutor())
@@ -54,4 +54,29 @@ public abstract class PlantDatabase extends RoomDatabase {
 
         }
     };
+
+    static final Migration MIGRATION_18_19 = new Migration(18, 19) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE plants ADD COLUMN family TEXT;");
+
+        }
+    };
+
+    static final Migration MIGRATION_19_20 = new Migration(19, 20) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE plants ADD COLUMN heightFrom INTEGER NOT NULL DEFAULT 0;");
+            database.execSQL("ALTER TABLE plants ADD COLUMN heightTo INTEGER NOT NULL DEFAULT 0;");
+        }
+    };
+
+    static final Migration MIGRATION_20_21 = new Migration(20, 21) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE plants ADD COLUMN taxonId TEXT;");
+
+        }
+    };
+
 }

@@ -168,4 +168,38 @@ public abstract class PlantDao {
     @Upsert
     public abstract void upsertTaxon(Taxon taxon);
 
+    @Query("SELECT fam.danskNavn "+
+            "FROM Taxon as spec "+
+            "JOIN Taxon as gen "+
+            "  ON gen.taxonRang='Slægt' "+
+            " AND gen.taxonId = spec.parentTaxonid "+
+            "JOIN Taxon as fam "+
+            "  ON fam.taxonRang='Familie' "+
+            " AND fam.taxonId = gen.parentTaxonid "+
+            "where spec.taxonRang='Art' and spec.taxonId = :taxonId")
+    public abstract LiveData<String> getFamilyForSpecies(String taxonId);
+
+    @Query("SELECT * "+
+            "FROM Taxon as spec "+
+            "where spec.taxonRang=:taxonRang and spec.danskNavn = :danskNavn ")
+    public abstract LiveData<Taxon> getTaxonWithName(String taxonRang, String danskNavn);
+
+    @Query("SELECT * "+
+            "FROM Taxon as spec "+
+            "where spec.taxonId = :taxonId ")
+    public abstract LiveData<Taxon> getTaxonById(String taxonId);
+
+    @Query("WITH RECURSIVE TaxonHierarchy(taxonId, taxonParentId, combNavn,  depth) AS ("+
+    "SELECT taxonId, parentTaxonid, taxonRang||'#'||danskNavn||'#'||videnskabeligtNavn as combNavn, 0 AS depth "+
+    "FROM Taxon "+
+    "WHERE taxonId = :taxonId "+
+    "UNION ALL "+
+    "SELECT t.taxonId, t.parentTaxonid, t.taxonRang||'#'||t.danskNavn||'#'||t.videnskabeligtNavn, th.depth + 1 "+
+    "FROM Taxon t "+
+    "INNER JOIN TaxonHierarchy th ON t.taxonId = th.taxonParentId "+
+    ") "+
+//    "SELECT * FROM TaxonHierarchy ORDER BY depth DESC")
+    "SELECT combNavn FROM TaxonHierarchy ORDER BY depth DESC")
+    public abstract LiveData<List<String>> getTaxonhierarchy(String taxonId);
+
 }

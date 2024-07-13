@@ -32,6 +32,9 @@
             android:name="com.susarne.ihave2.PlantEditActivity"
             android:exported="false" />
         <activity
+            android:name="com.susarne.ihave2.TaxonActivity"
+            android:exported="false" />
+        <activity
             android:name="com.susarne.ihave2.PhotoListActivity"
             android:exported="false" />
         <activity

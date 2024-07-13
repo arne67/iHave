@@ -6,12 +6,15 @@ import static com.susarne.ihave2.util.Performance.speed;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.MenuItem;
@@ -34,20 +37,20 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
-import com.susarne.ihave2.adapters.PlanteNavnArrayAdapter;
+import com.susarne.ihave2.adapters.NameArrayAdapter;
 import com.susarne.ihave2.models.IntentExtra.PhotoListActivityIntentExtra;
 import com.susarne.ihave2.models.Plant;
 import com.susarne.ihave2.models.PlantPhoto;
 import com.susarne.ihave2.models.PlantWithLists;
 import com.susarne.ihave2.models.Taxon;
 import com.susarne.ihave2.persistence.PlantRepository;
-import com.susarne.ihave2.util.CurrentUser;
 import com.susarne.ihave2.util.Utility;
 import com.susarne.ihave2.viewmodels.PlantEditActivityViewModel;
 import com.google.android.material.textfield.TextInputLayout;
@@ -63,9 +66,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class PlantEditActivity extends AppCompatActivity implements
         View.OnClickListener, AdapterView.OnItemClickListener {
@@ -81,20 +81,26 @@ public class PlantEditActivity extends AppCompatActivity implements
 
     // ui component
     //nytfelt-detail
-    private TextInputLayout mPlantText;
     private TextView mViewTitle;
     private RelativeLayout mCheckContainer, mBackArrowContainer;
     private ImageButton mCheck, mBackArrow;
     private ImageView mMainPhoto;
     private TextView mMainPhotoButton;
     private ImageView[] mMultiPhoto = new ImageView[4];
+    private AutoCompleteTextView mPlantTitle, mFamily;
+    private TextInputLayout mFamilyView;
+    private ImageButton mInfoButton;
+    private ImageButton mFamilyEditButton;
+
+    private TextInputLayout mHeightFrom, mHeightTo;
+    private TextInputLayout mPlantText;
     private GridLayout mCollage;
     private TextView mPhotocount;
     private TextView mMultiPhotoButton;
     private ImageButton mTestButton;
     private ImageButton mEditButton;
     private final CheckBox[] mCheckBoxFlower = new CheckBox[12];
-    private AutoCompleteTextView mPlantTitle,mCategoryMenu;
+    private AutoCompleteTextView mCategoryMenu;
     //private TextView mPlantId;
 
     // representing UI component
@@ -121,9 +127,12 @@ public class PlantEditActivity extends AppCompatActivity implements
 
     private FirebaseAuth mAuth;
 
-    private PlanteNavnArrayAdapter mAdapter;
+    private NameArrayAdapter mSpeciesAdapter, mFamilyAdapter;
 
     private List<String> mSpecies = new ArrayList<>();
+    private List<String> mFamilies = new ArrayList<>();
+
+    private int originalFamilyInputType;
 
 
 // start of public methods ********************************************************************************
@@ -150,7 +159,11 @@ public class PlantEditActivity extends AppCompatActivity implements
         mViewModel.initiate(getApplication());
         speed(TAG, 5);
         connectToViewElements();
+        originalFamilyInputType = mFamily.getInputType();
+        Log.d(TAG, "onCreate: originalfamilyinputtype: "+originalFamilyInputType);
         getSpecies();
+        getFamilies();
+
         speed(TAG, 6);
 
 
@@ -163,7 +176,6 @@ public class PlantEditActivity extends AppCompatActivity implements
         //getCallbackFromTokenRequest();
 
         speed(TAG, 9);
-
 
 
         speed(TAG, 10);
@@ -212,20 +224,45 @@ public class PlantEditActivity extends AppCompatActivity implements
     }
 
     private void getSpecies() {
-            mPlantRepository.getTaxonsNames("Art","%"+""+"%").observe(this, new Observer<List<String>>() {
-                @Override
-                public void onChanged(List<String> speciesNames) {
-                    mSpecies=speciesNames;
-//                    for (String n:speciesNames) {
-//                        Log.d(TAG, "onChanged: taxon.dansk navn: "+n);
-//
-//                    }
-                    mAdapter = new PlanteNavnArrayAdapter(getApplicationContext(),android.R.layout.simple_dropdown_item_1line, mSpecies);
-                    mPlantTitle.setThreshold(2);
-                    mPlantTitle.setAdapter(mAdapter);
-                    mAdapter.notifyDataSetChanged();
+        mPlantRepository.getTaxonsNames("Art", "%" + "" + "%").observe(this, new Observer<List<String>>() {
+            @Override
+            public void onChanged(List<String> speciesNames) {
+                mSpecies = speciesNames;
+                mSpeciesAdapter = new NameArrayAdapter(getApplicationContext(), android.R.layout.simple_dropdown_item_1line, mSpecies);
+                mPlantTitle.setThreshold(2);
+                mPlantTitle.setAdapter(mSpeciesAdapter);
+                mSpeciesAdapter.notifyDataSetChanged();
+            }
+        });
+    }
+
+    private void getSpeciesWithName(String name) {
+        mPlantRepository.getTaxonWithName("Art", name).observe(this, new Observer<Taxon>() {
+            @Override
+            public void onChanged(Taxon taxon) {
+                if (taxon==null){
+                    mInfoButton.setVisibility(View.GONE);
+                } else {
+                    mEditedPlant.plant.setTaxonId(taxon.getTaxonId());
+                    mInfoButton.setVisibility(View.VISIBLE);
+                    getFamilyforSpecies(taxon.getTaxonId());
                 }
-            });
+
+            }
+        });
+    }
+
+    private void getFamilies() {
+        mPlantRepository.getTaxonsNames("Familie", "%" + "" + "%").observe(this, new Observer<List<String>>() {
+            @Override
+            public void onChanged(List<String> familyNames) {
+                mFamilies = familyNames;
+                mFamilyAdapter = new NameArrayAdapter(getApplicationContext(), android.R.layout.simple_dropdown_item_1line, mFamilies);
+                mFamily.setThreshold(2);
+                mFamily.setAdapter(mFamilyAdapter);
+                mFamilyAdapter.notifyDataSetChanged();
+            }
+        });
     }
 
     private void setUserId() {
@@ -236,8 +273,6 @@ public class PlantEditActivity extends AppCompatActivity implements
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Log.d(TAG, "onDestroy: mPlantText: " + mPlantText.getEditText().getText().toString());
-//        mViewModel.setPlantText(mPlantText.getEditText().getText().toString());
         copyViewToEditedPlant();
         storeEditedPlantInViewModel();
     }
@@ -280,8 +315,19 @@ public class PlantEditActivity extends AppCompatActivity implements
 
     private void copyViewToEditedPlant() {
 
-        mEditedPlant.plant.setContent(mPlantText.getEditText().getText().toString());
+
         mEditedPlant.plant.setTitle(mPlantTitle.getText().toString());
+        mEditedPlant.plant.setFamily(mFamily.getText().toString());
+        Log.d(TAG, "copyViewToEditedPlant: mHeightFrom: "+mHeightFrom);
+        String heightString=mHeightFrom.getEditText().getText().toString();
+        Log.d(TAG, "copyViewToEditedPlant: heightString: "+heightString);
+        int heightInt=Integer.parseInt(heightString);
+        Log.d(TAG, "copyViewToEditedPlant: heightInt: "+heightInt);
+
+        mEditedPlant.plant.setHeightFrom(Integer.parseInt(mHeightFrom.getEditText().getText().toString()));
+        mEditedPlant.plant.setHeightTo(Integer.parseInt(mHeightTo.getEditText().getText().toString()));
+        mEditedPlant.plant.setContent(mPlantText.getEditText().getText().toString());
+
         String timestamp = Utility.getCurrentTimestamp();
         mEditedPlant.plant.setCreatedTime(timestamp);
         mEditedPlant.plant.setMainPhotoName(mMainPhotoName);
@@ -339,7 +385,11 @@ public class PlantEditActivity extends AppCompatActivity implements
         speed(TAG, 101);
         mViewTitle.setText(mEditedPlant.plant.getTitle());
         mPlantTitle.setText(mEditedPlant.plant.getTitle());
-        //mPlantId.setText(String.valueOf(mEditedPlant.plant.getPlantId()));
+        mFamily.setText(mEditedPlant.plant.getFamily());
+        formatFamily();
+        mHeightFrom.getEditText().setText(String.valueOf(mEditedPlant.plant.getHeightFrom()));
+        mHeightTo.getEditText().setText(String.valueOf(mEditedPlant.plant.getHeightTo()));
+
         mPlantText.getEditText().setText(mEditedPlant.plant.getContent());
 
         mMainPhotoName = mEditedPlant.plant.getMainPhotoName();
@@ -485,6 +535,15 @@ public class PlantEditActivity extends AppCompatActivity implements
                 Log.d(TAG, "onClick: toolbar_edit");
                 break;
             }
+            case R.id.edit_family_button: {
+                mFamily.setText(mFamily.getText().toString().substring(1));
+                formatFamily();
+                break;
+            }
+            case R.id.info_button: {
+                startTaxonActivity(mEditedPlant.plant.getTaxonId());
+                break;
+            }
         }
     }
 
@@ -581,9 +640,9 @@ public class PlantEditActivity extends AppCompatActivity implements
                     public void onActivityResult(ActivityResult result) {
                         if (result.getResultCode() == RESULT_OK) {
                             PhotoListActivityIntentExtra photoListActivityIntentExtra = result.getData().getParcelableExtra("photoListActivityIntentExtra");
-                            Log.d(TAG, "onActivityResult: photoListActivityIntentExtra.getMainPhotoName(): "+photoListActivityIntentExtra.getMainPhotoName());
-                            Log.d(TAG, "onActivityResult: photoListActivityIntentExtra.toString(): "+photoListActivityIntentExtra.toString());
-                            mEditedPlant.plantPhotos=photoListActivityIntentExtra.getPlantPhotos();
+                            Log.d(TAG, "onActivityResult: photoListActivityIntentExtra.getMainPhotoName(): " + photoListActivityIntentExtra.getMainPhotoName());
+                            Log.d(TAG, "onActivityResult: photoListActivityIntentExtra.toString(): " + photoListActivityIntentExtra.toString());
+                            mEditedPlant.plantPhotos = photoListActivityIntentExtra.getPlantPhotos();
                             mEditedPlant.plant.setMainPhotoName(photoListActivityIntentExtra.getMainPhotoName());
 //                            if (!mMainPhotoName.equals(mEditedPlant.plant.getMainPhotoName())){
                             mMainPhotoName = mEditedPlant.plant.getMainPhotoName();
@@ -612,10 +671,17 @@ public class PlantEditActivity extends AppCompatActivity implements
         mBackArrow = findViewById(R.id.toolbar_back_arrow);
 
         //nytfelt-detail
-        mPlantText = findViewById(R.id.plant_text);
         //mPlantId = findViewById(R.id.plant_id);
         mViewTitle = findViewById(R.id.plant_text_title);
         mPlantTitle = findViewById(R.id.plant_title);
+        mFamily = findViewById(R.id.family);
+        mHeightFrom = findViewById(R.id.height_from);
+        mHeightTo = findViewById(R.id.height_to);
+
+        mPlantText = findViewById(R.id.plant_text);
+        mFamilyView = findViewById(R.id.family_view);
+        mInfoButton = findViewById(R.id.info_button);
+        mFamilyEditButton = findViewById(R.id.edit_family_button);
         mMainPhoto = findViewById(R.id.main_photo);
         mMainPhotoButton = findViewById(R.id.main_photo_button);
         mCheckBoxFlower[0] = findViewById(R.id.checkbox_flower_01);
@@ -662,44 +728,92 @@ public class PlantEditActivity extends AppCompatActivity implements
 
         });
 
-//        mAdapter = new PlanteNavnArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, new ArrayList<>());
-//        mPlantTitle.setThreshold(1);
-//        mPlantTitle.setAdapter(mAdapter);
-//
-//        mPlantTitle.addTextChangedListener(new TextWatcher() {
-//            @Override
-//            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-//            }
-//
-//            @Override
-//            public void onTextChanged(CharSequence s, int start, int before, int count) {
-//                updateAdapter(s.toString());
-//            }
-//
-//            @Override
-//            public void afterTextChanged(Editable s) {
-//            }
-//
-//
-//        });
+        mPlantTitle.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean b) {
+                if (b) {
+                    // in edit
+                } else {
+                    // has left edit
+                    getSpeciesWithName(mPlantTitle.getText().toString());
+
+                }
+            }
+        });
+
+        mPlantTitle.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String danskNavn = (String) parent.getItemAtPosition(position);
+                getSpeciesWithName(danskNavn);
+            }
+        });
 
 
     }
 
+    private void getFamilyforSpecies(String taxonId) {
+        if (mFamily.getText().length() == 0 || mFamily.getText().charAt(0) == ':') {
+            mPlantRepository.getFamilyForSpecies(taxonId).observe(this, new Observer<String>() {
+                @Override
+                public void onChanged(String family) {
+                    Log.d(TAG, "onChanged: -family+" + family);
+                    if (family != null) {
+                        mFamily.setText(":" + family);
+                        formatFamily();
+                    } else {
+                        mFamily.setText("");
+                        formatFamily();
+                    }
+                }
+            });
+        }
+
+    }
+
+    private void formatFamily() {
+
+        if (mFamily.length() > 0 && mFamily.getText().charAt(0) == ':') {
+            Log.d(TAG, "formatFamily: " + "med kolon");
+            int color = ContextCompat.getColor(getApplicationContext(), R.color.darkGrey);  // Hent farven
+            mFamily.setTextColor(color);
+            //mFamily.setFocusable(false);
+            //mFamily.setInputType(InputType.TYPE_NULL);
+            mFamily.setEnabled(false);
+
+            mFamilyEditButton.setVisibility(View.VISIBLE);
+
+        } else {
+            Log.d(TAG, "formatFamily: " + "uden kolon");
+            int color = ContextCompat.getColor(getApplicationContext(), R.color.black);  // Hent farven
+            mFamily.setTextColor(color);
+
+//            mFamily.setInputType(originalFamilyInputType);
+//            mFamily.setFocusable(true);
+            mFamily.setEnabled(true);
+//            mFamilyView.setFocusable(true);
+//            mFamilyView.setEnabled(true);
+            mFamilyEditButton.setVisibility(View.GONE);
+            mInfoButton.setVisibility(View.GONE);
+
+        }
+    }
+
     private void updateAdapter(String input) {
-        Log.d(TAG, "updateAdapter: input: "+input);;
+        Log.d(TAG, "updateAdapter: input: " + input);
+        ;
         if (input.length() >= 2) {
-            mPlantRepository.getTaxonsNames("Art","%"+input + "%").observe(this, new Observer<List<String>>() {
+            mPlantRepository.getTaxonsNames("Art", "%" + input + "%").observe(this, new Observer<List<String>>() {
                 @Override
                 public void onChanged(List<String> taxons) {
-                    for (String taxon:taxons
-                         ) {
-                        Log.d(TAG, "onChanged: taxon.dansk navn: "+taxon);
+                    for (String taxon : taxons
+                    ) {
+                        Log.d(TAG, "onChanged: taxon.dansk navn: " + taxon);
 
                     }
-                    Log.d(TAG, "onChanged: her tilføjer vi "+input);
-                    mAdapter.clear();
-                    mAdapter.addAll(taxons.stream().collect(Collectors.toList()));
+                    Log.d(TAG, "onChanged: her tilføjer vi " + input);
+                    mSpeciesAdapter.clear();
+                    mSpeciesAdapter.addAll(taxons.stream().collect(Collectors.toList()));
                     //mAdapter.notifyDataSetChanged();
                 }
             });
@@ -716,6 +830,8 @@ public class PlantEditActivity extends AppCompatActivity implements
         mCollage.setOnClickListener(this);
         mMultiPhotoButton.setOnClickListener(this);
         mTestButton.setOnClickListener(this);
+        mInfoButton.setOnClickListener(this);
+        mFamilyEditButton.setOnClickListener(this);
         mCategoryMenu.setOnItemClickListener(this);
 
     }
@@ -977,6 +1093,13 @@ public class PlantEditActivity extends AppCompatActivity implements
             }
         }, 5000);   //5 seconds
         mCheckBoxFlower[1].setChecked(true);
+    }
+
+    public void startTaxonActivity(String taxonId) {
+
+        Intent intent = new Intent(this, TaxonActivity.class);
+        intent.putExtra("selected_taxonId", taxonId);
+        startActivity(intent);
     }
 
 }
